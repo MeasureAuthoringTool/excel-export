@@ -3,9 +3,7 @@ import { AppController } from './app.controller';
 import {Request as ExpressRequest, Response} from 'express';
 
 import { AppService } from './app.service';
-import { UsersService } from './users/users.service';
 import { JwtService } from '@nestjs/jwt';
-import { AuthService } from './auth/auth.service';
 
 
 describe('AppController', () => {
@@ -15,7 +13,7 @@ describe('AppController', () => {
     
     const app: TestingModule = await Test.createTestingModule({
       controllers: [AppController],
-      providers: [AppService, AuthService, UsersService, JwtService],
+      providers: [AppService, JwtService],
     }).compile();
 
     appController = app.get<AppController>(AppController);
