@@ -10,17 +10,17 @@ import * as path from 'path';
 export class AppService {
   getExport(): any {
     // Require library
-    var excel = require('excel4node');
+    const excel = require('excel4node');
 
     // Create a new instance of a Workbook class
-    var workbook = new excel.Workbook();
+    const workbook = new excel.Workbook();
 
     // Add Worksheets to the workbook
-    var worksheet = workbook.addWorksheet('Sheet 1');
-    var worksheet2 = workbook.addWorksheet('Sheet 2');
+    const worksheet = workbook.addWorksheet('Sheet 1');
+    const worksheet2 = workbook.addWorksheet('Sheet 2');
 
     // Create a reusable style
-    var style = workbook.createStyle({
+    const style = workbook.createStyle({
       font: {
         color: '#FF0800',
         size: 12,
@@ -47,7 +47,6 @@ export class AppService {
       .style(style)
       .style({ font: { size: 14 } });
 
-    
     return workbook;
   }
 }
