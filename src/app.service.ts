@@ -29,7 +29,7 @@ export class AppService {
     });
 
     // Set value of cell A1 to 100 as a number type styled with paramaters of style
-    worksheet.cell(1, 1).number(1500).style(style);
+    worksheet.cell(1, 1).number(1230).style(style);
 
     // Set value of cell B1 to 300 as a number type styled with paramaters of style
     worksheet.cell(1, 2).number(2400).style(style);
