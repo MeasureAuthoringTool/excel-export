@@ -57,7 +57,7 @@ jobs:
         run: npm run build
 
       - name: Execute test coverage
-        run: npm run-script coverage
+        run: npm run-script test:cov
 
       - name: Store the coverage report as an artifact
         uses: actions/upload-artifact@v3
