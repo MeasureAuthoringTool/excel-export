@@ -1,9 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppController } from './app.controller';
-import { Request as ExpressRequest, Response } from 'express';
+import { Response } from 'express';
 
 import { AppService } from './app.service';
 import { JwtService } from '@nestjs/jwt';
+import {} from 'node-mocks-http';
 
 describe('AppController', () => {
   let appController: AppController;
@@ -19,6 +20,7 @@ describe('AppController', () => {
 
   describe('root', () => {
     it('should return "OK"', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       const httpMocks = require('node-mocks-http');
 
       const response: Response = httpMocks.createResponse() as Response;

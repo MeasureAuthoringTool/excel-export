@@ -58,3 +58,6 @@ $ npm run test:e2e
 $ npm run test:cov
 ```
 
+## Docker
+Dockerfile and docker-compose
+```docker compose down --remove-orphans && docker volume prune && docker compose build --no-cache && docker compose up --force-recreate```

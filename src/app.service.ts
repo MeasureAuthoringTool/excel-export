@@ -1,15 +1,10 @@
 import { Injectable } from '@nestjs/common';
 
-import express from 'express';
-import { mkdirp } from 'mkdirp';
-import _ from 'underscore';
-import fs from 'fs';
-import * as path from 'path';
-
 @Injectable()
 export class AppService {
   getExport(): any {
     // Require library
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const excel = require('excel4node');
 
     // Create a new instance of a Workbook class
@@ -17,7 +12,6 @@ export class AppService {
 
     // Add Worksheets to the workbook
     const worksheet = workbook.addWorksheet('Sheet 1');
-    const worksheet2 = workbook.addWorksheet('Sheet 2');
 
     // Create a reusable style
     const style = workbook.createStyle({

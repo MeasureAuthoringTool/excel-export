@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AuthGuard } from './auth.guard';
 import { JwtService } from '@nestjs/jwt';
 import { createMock } from '@golevelup/ts-jest';
-import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import { ExecutionContext } from '@nestjs/common';
 
 describe('AuthGuard', () => {
   let guard: AuthGuard;
@@ -12,7 +12,7 @@ describe('AuthGuard', () => {
       providers: [JwtService],
     }).compile();
 
-    guard = new AuthGuard(new JwtService());
+    guard = new AuthGuard(module.get(JwtService));
   });
 
   it('should be defined', () => {
@@ -48,7 +48,7 @@ describe('AuthGuard', () => {
           body: undefined,
           headers: {
             authorization:
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.TrS5yGHTtmCe2JzhQSOHH_mYh7Cq6sQlbuSUN3nHBvc',
+              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.kcPmFlSUdC9LvuMufomQepInu3GwbBKKct49e2dxyrI',
           },
         } as unknown as Request;
       });
