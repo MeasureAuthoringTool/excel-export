@@ -57,7 +57,10 @@ jobs:
         run: npm run build
 
       - name: Execute test coverage
-        run: npm run-script test:cov
+        run: |
+          export JWT_SECRET=ThisIsMySecret
+          echo The JWT secret is:$JWT_SECRET
+          npm run-script test:cov
 
       - name: Store the coverage report as an artifact
         uses: actions/upload-artifact@v3
