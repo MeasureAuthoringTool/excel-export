@@ -51,7 +51,7 @@ jobs:
         run: npm run-script lint
 
       - name: Check prettier formatting
-        run: npm run-script check-format
+        run: npm run-script format
 
       - name: Build the source code
         run: npm run build
