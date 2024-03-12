@@ -14,11 +14,11 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:cov": "jest --coverage",
-    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test": "JWT_SECRET=ThisIsMySecret jest",
+    "test:watch": "JWT_SECRET=ThisIsMySecret  jest --watch",
+    "test:cov": "JWT_SECRET=ThisIsMySecret  jest --coverage",
+    "test:debug": "JWT_SECRET=ThisIsMySecret  node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
+    "test:e2e": "JWT_SECRET=ThisIsMySecret  jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",
