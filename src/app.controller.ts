@@ -1,8 +1,7 @@
-import { Controller, Get, UseGuards, Req, Res, HttpStatus } from '@nestjs/common';
-import { Response} from 'express';
+import { Controller, Get, UseGuards, Res } from '@nestjs/common';
+import { Response } from 'express';
 import { AppService } from './app.service';
 import { AuthGuard } from './auth/auth.guard';
-
 
 @Controller()
 export class AppController {
@@ -10,8 +9,8 @@ export class AppController {
 
   @UseGuards(AuthGuard)
   @Get()
-  getFile(@Res() res: Response): any {    
-    const wb:any = this.appService.getExport();
+  getFile(@Res() res: Response): any {
+    const wb: any = this.appService.getExport();
     wb.write(`FileName.xlsx`, res);
     return res;
   }
