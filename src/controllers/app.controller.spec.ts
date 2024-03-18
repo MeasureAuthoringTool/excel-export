@@ -8,6 +8,7 @@ import {} from 'node-mocks-http';
 
 describe('AppController', () => {
   let appController: AppController;
+  let appService: AppService;
 
   beforeEach(async () => {
     const app: TestingModule = await Test.createTestingModule({
@@ -16,6 +17,7 @@ describe('AppController', () => {
     }).compile();
 
     appController = app.get<AppController>(AppController);
+    appService = app.get<AppService>(AppService);
   });
 
   describe('root', () => {
@@ -27,6 +29,30 @@ describe('AppController', () => {
 
       await expect(appController.getFile(response)).toBeDefined();
       //expect(res.statusCode).toEqual(200);
+    });
+
+    it('should call generateXlsx method of excelService', async () => {
+      jest
+        .spyOn(appService, 'generateXlsx')
+        .mockResolvedValueOnce(Buffer.from('mocked-excel-data'));
+      const res: Partial<Response> = {
+        header: jest.fn(),
+        send: jest.fn(),
+      };
+      await appController.getFile(res as Response);
+      expect(appService.generateXlsx).toHaveBeenCalledTimes(1);
+    });
+    it('should send the generated Excel file as the response', async () => {
+      const mockedExcelBuffer = Buffer.from('mocked-excel-data');
+      jest
+        .spyOn(appService, 'generateXlsx')
+        .mockResolvedValueOnce(mockedExcelBuffer);
+      const res: Partial<Response> = {
+        header: jest.fn(),
+        send: jest.fn(),
+      };
+      await appController.getFile(res as Response);
+      expect(res.send).toHaveBeenCalledWith(mockedExcelBuffer);
     });
   });
 });

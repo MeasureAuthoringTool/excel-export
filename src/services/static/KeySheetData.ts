@@ -32,7 +32,7 @@ export const keySheetRowsData = [
       'CODE: SNOMED-CT 4525004]',
   ],
   [
-    'Tuple',
+    'Tuple1',
     '{ \n' + 'key1: value1, \n' + 'key2: value2, \n' + '... \n' + '}',
     '{ \n' +
       ' period: Interval: 06/29/2017 8:00 AM - 12/31/2024 11:59 PM, \n' +
@@ -46,8 +46,14 @@ export const keySheetRowsData = [
 
 export const keySheetColumnsData = [
   { name: 'CQL Type' },
-  { name: 'Format1' },
+  { name: 'Format' },
   { name: 'Example' },
 ];
 
 export const keySheetDescription = `NOTE: FALSE(...) indicates a false value. The type of falseness is specified in the parentheses.\nFor example, FALSE([]) indicates falseness due to an empty list.\nCells that are too long will be truncated due to limitations in Excel.`;
+
+export const defaultKeySheetFontStyle = {
+  color: { argb: '000000' },
+  name: 'Arial',
+  size: 14,
+};

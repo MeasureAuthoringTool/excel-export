@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import * as ExcelJS from 'exceljs';
 import {
+  defaultKeySheetFontStyle,
   keySheetColumnsData,
   keySheetDescription,
   keySheetRowsData,
@@ -64,9 +65,8 @@ export class AppService {
       bottom: { style: 'thin', color: { argb: '000000' } },
     };
     tableHeadingCell.font = {
+      ...defaultKeySheetFontStyle,
       bold: true,
-      color: { argb: '000000' },
-      name: 'Arial',
       size: 16,
     };
 
@@ -85,10 +85,8 @@ export class AppService {
     headerRow.height = 18;
     headerRow.eachCell((cell) => {
       cell.font = {
+        ...defaultKeySheetFontStyle,
         bold: true,
-        color: { argb: '000000' },
-        name: 'Arial',
-        size: 14,
       };
       cell.fill = {
         type: 'pattern',
@@ -110,7 +108,7 @@ export class AppService {
     dataRows.forEach((row) => {
       //row.height = 18;
       row.eachCell((cell) => {
-        cell.font = { color: { argb: '000000' }, name: 'Arial', size: 14 };
+        cell.font = defaultKeySheetFontStyle;
         cell.alignment = { wrapText: true, vertical: 'middle' };
         cell.border = {
           bottom: { style: 'thin', color: { argb: 'D4D4D4' } },
