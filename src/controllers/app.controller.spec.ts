@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AppController } from './app.controller';
 import { Response } from 'express';
 
-import { AppService } from './app.service';
+import { AppService } from '../services/app.service';
 import { JwtService } from '@nestjs/jwt';
 import {} from 'node-mocks-http';
 

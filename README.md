@@ -24,7 +24,7 @@
 
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework Application for hosting a Excel Export service for MADiE 
+[Nest](https://github.com/nestjs/nest) framework Application for hosting a Excel Export service for MADiE
 
 ## Installation
 
@@ -59,5 +59,6 @@ $ npm run test:cov
 ```
 
 ## Docker
+
 Dockerfile and docker-compose
-```docker compose down --remove-orphans && docker volume prune && docker compose build --no-cache && docker compose up --force-recreate```
+`docker compose down --remove-orphans && docker volume prune && docker compose build --no-cache && docker compose up --force-recreate`
