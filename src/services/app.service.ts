@@ -19,7 +19,6 @@ export class AppService {
     //Generate other worksheets as needed
 
     // Return final workbook
-
     return workbook.xlsx.writeBuffer() as Promise<Buffer>;
   }
 
