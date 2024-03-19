@@ -4,17 +4,17 @@ import { ExportService } from '../services/export.service';
 import { AuthGuard } from '../auth/auth.guard';
 
 @Controller('excel')
+@UseGuards(AuthGuard)
 export class ExportController {
   constructor(private readonly exportService: ExportService) {}
 
-  @UseGuards(AuthGuard)
   @Get()
   @Header(
     'Content-Type',
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   )
   @Header('Content-Disposition', 'attachment; filename="exampleWorkbook.xlsx"')
-  async getFile(@Res() res: Response) {
+  async getExcelFile(@Res() res: Response) {
     const buffer = await this.exportService.generateXlsx();
     res.send(buffer);
   }

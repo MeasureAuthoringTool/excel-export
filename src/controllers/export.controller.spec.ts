@@ -27,7 +27,7 @@ describe('exportController', () => {
 
       const response: Response = httpMocks.createResponse() as Response;
 
-      await expect(exportController.getFile(response)).toBeDefined();
+      await expect(exportController.getExcelFile(response)).toBeDefined();
       //expect(res.statusCode).toEqual(200);
     });
 
@@ -39,7 +39,7 @@ describe('exportController', () => {
         header: jest.fn(),
         send: jest.fn(),
       };
-      await exportController.getFile(res as Response);
+      await exportController.getExcelFile(res as Response);
       expect(exportService.generateXlsx).toHaveBeenCalledTimes(1);
     });
     it('should send the generated Excel file as the response', async () => {
@@ -51,7 +51,7 @@ describe('exportController', () => {
         header: jest.fn(),
         send: jest.fn(),
       };
-      await exportController.getFile(res as Response);
+      await exportController.getExcelFile(res as Response);
       expect(res.send).toHaveBeenCalledWith(mockedExcelBuffer);
     });
   });
