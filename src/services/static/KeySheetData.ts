@@ -51,9 +51,3 @@ export const keySheetColumnsData = [
 ];
 
 export const keySheetDescription = `NOTE: FALSE(...) indicates a false value. The type of falseness is specified in the parentheses.\nFor example, FALSE([]) indicates falseness due to an empty list.\nCells that are too long will be truncated due to limitations in Excel.`;
-
-export const defaultKeySheetFontStyle = {
-  color: { argb: '000000' },
-  name: 'Arial',
-  size: 14,
-};

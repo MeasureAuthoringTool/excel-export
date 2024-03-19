@@ -1,14 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import * as ExcelJS from 'exceljs';
 import {
-  defaultKeySheetFontStyle,
   keySheetColumnsData,
   keySheetDescription,
   keySheetRowsData,
 } from './static/KeySheetData';
+import {
+  defaultKeySheetAlignmentStyle,
+  defaultKeySheetBorderStyle,
+  defaultKeySheetFontStyle,
+} from '../styles/keySheetStyles';
 
 @Injectable()
-export class AppService {
+export class ExportService {
   async generateXlsx(): Promise<Buffer> {
     const workbook = new ExcelJS.Workbook();
 
@@ -35,10 +39,10 @@ export class AppService {
     worksheet.mergeCells('A1:C1');
     const worksheetHeadingCell = worksheetHeadingRow.getCell(1);
     worksheetHeadingCell.alignment = {
+      ...defaultKeySheetAlignmentStyle,
       horizontal: 'center',
-      vertical: 'middle',
     };
-    worksheetHeadingCell.font = { bold: true, name: 'Arial', size: 20 };
+    worksheetHeadingCell.font = { ...defaultKeySheetFontStyle, size: 20 };
     worksheet.getRow(1).height = 54.75;
 
     // Add worksheet description
@@ -46,8 +50,11 @@ export class AppService {
     worksheet.mergeCells('A2:C2');
     worksheet.getRow(2).height = 69.75;
     const worksheetDescriptionCell = worksheetDescriptionRow.getCell(1);
-    worksheetDescriptionCell.alignment = { wrapText: true, vertical: 'middle' };
-    worksheetDescriptionCell.font = { name: 'Arial', size: 14 };
+    worksheetDescriptionCell.alignment = defaultKeySheetAlignmentStyle;
+    worksheetDescriptionCell.font = {
+      ...defaultKeySheetFontStyle,
+      bold: false,
+    };
 
     // Add empty row
     worksheet.addRow([]);
@@ -59,13 +66,15 @@ export class AppService {
     worksheet.mergeCells('A4:C4');
     worksheet.getRow(4).height = 18;
     const tableHeadingCell = tableHeadingRow.getCell(1);
-    tableHeadingCell.alignment = { horizontal: 'center', vertical: 'middle' };
+    tableHeadingCell.alignment = {
+      ...defaultKeySheetAlignmentStyle,
+      horizontal: 'center',
+    };
     tableHeadingCell.border = {
-      bottom: { style: 'thin', color: { argb: '000000' } },
+      bottom: { ...defaultKeySheetBorderStyle, color: { argb: '000000' } }, //need to check
     };
     tableHeadingCell.font = {
       ...defaultKeySheetFontStyle,
-      bold: true,
       size: 16,
     };
 
@@ -83,19 +92,16 @@ export class AppService {
     const headerRow = worksheet.getRow(tableStartRow);
     headerRow.height = 18;
     headerRow.eachCell((cell) => {
-      cell.font = {
-        ...defaultKeySheetFontStyle,
-        bold: true,
-      };
+      cell.font = defaultKeySheetFontStyle;
       cell.fill = {
         type: 'pattern',
         pattern: 'solid',
         fgColor: { argb: 'FFFFFF' },
       };
-      cell.alignment = { vertical: 'middle' };
+      cell.alignment = defaultKeySheetAlignmentStyle;
       cell.border = {
-        bottom: { style: 'thin', color: { argb: 'D4D4D4' } },
-        right: { style: 'thin', color: { argb: 'D4D4D4' } },
+        bottom: defaultKeySheetBorderStyle,
+        right: defaultKeySheetBorderStyle,
       };
     });
 
@@ -105,13 +111,12 @@ export class AppService {
       worksheet.rowCount - tableStartRow,
     );
     dataRows.forEach((row) => {
-      //row.height = 18;
       row.eachCell((cell) => {
-        cell.font = defaultKeySheetFontStyle;
-        cell.alignment = { wrapText: true, vertical: 'middle' };
+        cell.font = { ...defaultKeySheetFontStyle, bold: false };
+        cell.alignment = defaultKeySheetAlignmentStyle;
         cell.border = {
-          bottom: { style: 'thin', color: { argb: 'D4D4D4' } },
-          right: { style: 'thin', color: { argb: 'D4D4D4' } },
+          bottom: defaultKeySheetBorderStyle,
+          right: defaultKeySheetBorderStyle,
         };
       });
     });

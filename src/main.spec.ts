@@ -11,10 +11,10 @@ jest.mock('@nestjs/core', () => ({
     create: jest.fn().mockResolvedValue(createMock<NestExpressApplication>()),
   },
 }));
-jest.mock('./app.module');
+jest.mock('./export.module');
 // jest.mock('app.config');
 
-describe('App Bootstrap', () => {
+describe('Export Bootstrap', () => {
   it('it bootstraps and launches the application', async () => {
     await bootstrap();
 

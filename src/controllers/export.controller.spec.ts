@@ -1,23 +1,23 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AppController } from './app.controller';
+import { ExportController } from './export.controller';
 import { Response } from 'express';
 
-import { AppService } from '../services/app.service';
+import { ExportService } from '../services/export.service';
 import { JwtService } from '@nestjs/jwt';
 import {} from 'node-mocks-http';
 
-describe('AppController', () => {
-  let appController: AppController;
-  let appService: AppService;
+describe('exportController', () => {
+  let exportController: ExportController;
+  let exportService: ExportService;
 
   beforeEach(async () => {
     const app: TestingModule = await Test.createTestingModule({
-      controllers: [AppController],
-      providers: [AppService, JwtService],
+      controllers: [ExportController],
+      providers: [ExportService, JwtService],
     }).compile();
 
-    appController = app.get<AppController>(AppController);
-    appService = app.get<AppService>(AppService);
+    exportController = app.get<ExportController>(ExportController);
+    exportService = app.get<ExportService>(ExportService);
   });
 
   describe('root', () => {
@@ -27,31 +27,31 @@ describe('AppController', () => {
 
       const response: Response = httpMocks.createResponse() as Response;
 
-      await expect(appController.getFile(response)).toBeDefined();
+      await expect(exportController.getFile(response)).toBeDefined();
       //expect(res.statusCode).toEqual(200);
     });
 
     it('should call generateXlsx method of excelService', async () => {
       jest
-        .spyOn(appService, 'generateXlsx')
+        .spyOn(exportService, 'generateXlsx')
         .mockResolvedValueOnce(Buffer.from('mocked-excel-data'));
       const res: Partial<Response> = {
         header: jest.fn(),
         send: jest.fn(),
       };
-      await appController.getFile(res as Response);
-      expect(appService.generateXlsx).toHaveBeenCalledTimes(1);
+      await exportController.getFile(res as Response);
+      expect(exportService.generateXlsx).toHaveBeenCalledTimes(1);
     });
     it('should send the generated Excel file as the response', async () => {
       const mockedExcelBuffer = Buffer.from('mocked-excel-data');
       jest
-        .spyOn(appService, 'generateXlsx')
+        .spyOn(exportService, 'generateXlsx')
         .mockResolvedValueOnce(mockedExcelBuffer);
       const res: Partial<Response> = {
         header: jest.fn(),
         send: jest.fn(),
       };
-      await appController.getFile(res as Response);
+      await exportController.getFile(res as Response);
       expect(res.send).toHaveBeenCalledWith(mockedExcelBuffer);
     });
   });

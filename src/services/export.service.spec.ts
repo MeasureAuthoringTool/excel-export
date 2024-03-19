@@ -1,15 +1,15 @@
-import { AppService } from './app.service';
+import { ExportService } from './export.service';
 import * as ExcelJS from 'exceljs';
 import { keySheetDescription } from './static/KeySheetData';
 describe('ExcelService', () => {
-  let excelService: AppService;
+  let excelExportService: ExportService;
   beforeEach(() => {
-    excelService = new AppService();
+    excelExportService = new ExportService();
   });
   it('should generate key worksheet correctly', () => {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('KEY');
-    excelService.generateKeyWorksheet(worksheet);
+    excelExportService.generateKeyWorksheet(worksheet);
 
     // Test column widths
     expect(worksheet.getColumn('A').width).toBe(76.38);
