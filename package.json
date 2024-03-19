@@ -9,7 +9,7 @@
     "build": "nest build",
     "precommit": "npm run lint && npm test",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "start": "JWT_SECRET=ThisIsMySecret nest start",
+    "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
