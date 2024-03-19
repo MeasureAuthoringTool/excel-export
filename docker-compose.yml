@@ -1,7 +1,6 @@
 version: '3.9'
 
 services:
-
   app:
     build:
       context: .
@@ -9,10 +8,8 @@ services:
     container_name: excel-export
     environment:
       - PORT=3000
-      - JWT_SECRET=${JWT_SECRET}      
+      - JWT_SECRET=${JWT_SECRET}
     ports:
-      - '3000:3000'    
+      - '3000:3000'
     volumes:
       - /dist
-
-  
