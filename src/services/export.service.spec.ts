@@ -164,4 +164,21 @@ describe('ExcelService', () => {
     expect(worksheet.getCell(3, 13).value).toBe('FUNCTION');
     expect(worksheet.getCell(3, 14).value).toBe('FUNCTION');
   });
+
+  it('test generateXlsx', async () => {
+    const exportDtos: TestCaseExcelExportDto[] = [exportDto];
+    const buffer = await excelExportService.generateXlsx(exportDtos);
+    expect(buffer).not.toBe(null);
+
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(buffer);
+
+    const keyWorkSheet = workbook.getWorksheet('KEY');
+    expect(keyWorkSheet).not.toBe(null);
+
+    const populationCriteria1WorkSheet = workbook.getWorksheet(
+      '1 - Population Criteria Section',
+    );
+    expect(populationCriteria1WorkSheet).not.toBe(null);
+  });
 });
