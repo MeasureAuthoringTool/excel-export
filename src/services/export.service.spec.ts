@@ -1,8 +1,50 @@
 import { ExportService } from './export.service';
 import * as ExcelJS from 'exceljs';
 import { keySheetDescription } from './static/KeySheetData';
+import { TestCaseExcelExportDto } from '@madie/madie-models';
+
 describe('ExcelService', () => {
   let excelExportService: ExportService;
+  const exportDto: TestCaseExcelExportDto = {
+    groupId: 'testGroupId',
+    groupNumber: '1',
+    testCaseExecutionResults: [
+      {
+        populations: [
+          {
+            name: 'initialPopulation',
+            expected: 1,
+            actual: 2,
+          },
+        ],
+        notes: '',
+        last: 'testSeries1',
+        first: 'testTitle1',
+        birthdate: '11/12/1972',
+        expired: '',
+        deathdate: '',
+        ethnicity: 'Hispanic or Latino',
+        race: 'Other Race',
+        gender: 'Female',
+        definitions: [
+          {
+            logic: 'define "Denominator":\n  "Initial Population"',
+            actual: 'UNHIT',
+          },
+        ],
+        functions: [
+          {
+            logic: 'HospitalizationWithObservation',
+            actual: 'FUNCTION',
+          },
+          {
+            logic: 'NormalizeInterval',
+            actual: 'FUNCTION',
+          },
+        ],
+      },
+    ],
+  };
   beforeEach(() => {
     excelExportService = new ExportService();
   });
@@ -76,5 +118,50 @@ describe('ExcelService', () => {
         expect(cell.border.right.color.argb).toBe('D4D4D4');
       });
     });
+  });
+
+  it('should generate population criteria 1 worksheet correctly', () => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('1 - Population Criteria Section');
+
+    excelExportService.generatePopulationWorksheet(worksheet, exportDto);
+
+    expect(worksheet.getRow(3).cellCount).toBe(14);
+    expect(worksheet.getCell(1, 1).value).toBe('Expected');
+    expect(worksheet.getCell(1, 2).value).toBe('Actual');
+
+    expect(worksheet.getCell(2, 1).value).toBe('initialPopulation');
+    expect(worksheet.getCell(2, 2).value).toBe('initialPopulation');
+    expect(worksheet.getCell(2, 3).value).toBe('notes');
+    expect(worksheet.getCell(2, 4).value).toBe('last');
+    expect(worksheet.getCell(2, 5).value).toBe('first');
+    expect(worksheet.getCell(2, 6).value).toBe('birthdate');
+    expect(worksheet.getCell(2, 7).value).toBe('expired');
+    expect(worksheet.getCell(2, 8).value).toBe('deathdate');
+    expect(worksheet.getCell(2, 9).value).toBe('ethnicity');
+    expect(worksheet.getCell(2, 10).value).toBe('race');
+    expect(worksheet.getCell(2, 11).value).toBe('gender');
+    expect(worksheet.getCell(2, 12).value).toBe(
+      'define "Denominator":\n  "Initial Population"',
+    );
+    expect(worksheet.getCell(2, 13).value).toBe(
+      'HospitalizationWithObservation',
+    );
+    expect(worksheet.getCell(2, 14).value).toBe('NormalizeInterval');
+
+    expect(worksheet.getCell(3, 1).value).toBe(1);
+    expect(worksheet.getCell(3, 2).value).toBe(2);
+    expect(worksheet.getCell(3, 3).value).toBe('');
+    expect(worksheet.getCell(3, 4).value).toBe('testSeries1');
+    expect(worksheet.getCell(3, 5).value).toBe('testTitle1');
+    expect(worksheet.getCell(3, 6).value).toBe('11/12/1972');
+    expect(worksheet.getCell(3, 7).value).toBe('FALSE');
+    expect(worksheet.getCell(3, 8).value).toBe('');
+    expect(worksheet.getCell(3, 9).value).toBe('Hispanic or Latino');
+    expect(worksheet.getCell(3, 10).value).toBe('Other Race');
+    expect(worksheet.getCell(3, 11).value).toBe('Female');
+    expect(worksheet.getCell(3, 12).value).toBe('UNHIT');
+    expect(worksheet.getCell(3, 13).value).toBe('FUNCTION');
+    expect(worksheet.getCell(3, 14).value).toBe('FUNCTION');
   });
 });

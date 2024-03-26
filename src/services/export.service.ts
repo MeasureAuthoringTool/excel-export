@@ -10,10 +10,17 @@ import {
   defaultKeySheetBorderStyle,
   defaultKeySheetFontStyle,
 } from '../styles/keySheetStyles';
+import {
+  TestCaseExecutionResultDto,
+  TestCaseExcelExportDto,
+  PopulationDto,
+} from '@madie/madie-models';
 
 @Injectable()
 export class ExportService {
-  async generateXlsx(): Promise<Buffer> {
+  async generateXlsx(
+    testCaseExcelExportDtos: TestCaseExcelExportDto[],
+  ): Promise<Buffer> {
     const workbook = new ExcelJS.Workbook();
 
     //Generate Key worksheet
@@ -21,6 +28,14 @@ export class ExportService {
     this.generateKeyWorksheet(keyWorkSheet);
 
     //Generate other worksheets as needed
+    const groupNumber = testCaseExcelExportDtos[0].groupNumber;
+    const populationWorksheet = workbook.addWorksheet(
+      `${groupNumber} - Population Criteria Section`,
+    );
+    this.generatePopulationWorksheet(
+      populationWorksheet,
+      testCaseExcelExportDtos[0],
+    );
 
     // Return final workbook
     return workbook.xlsx.writeBuffer() as Promise<Buffer>;
@@ -119,6 +134,167 @@ export class ExportService {
           right: defaultKeySheetBorderStyle,
         };
       });
+    });
+  }
+
+  public generatePopulationWorksheet(
+    worksheet: ExcelJS.Worksheet,
+    testCaseGroupDto: TestCaseExcelExportDto,
+  ) {
+    let firstRow = [];
+    let headerRow = [];
+    const testCasesData = [];
+    testCaseGroupDto.testCaseExecutionResults.forEach(
+      (result: TestCaseExecutionResultDto) => {
+        const firstRowData = [];
+        const headerRowData = [];
+        const testCaseData = [];
+        const populations: PopulationDto[] =
+          this.getPopulations(testCaseGroupDto);
+        populations?.forEach((population) => {
+          firstRowData.push('Expected', 'Actual');
+          headerRowData.push(population.name, population.name);
+          this.populateTestCaseExpectedAndActual(
+            testCaseData,
+            result,
+            population,
+          );
+        });
+
+        this.populateTestCase(testCaseData, result);
+        testCasesData.push(testCaseData);
+        firstRow = firstRowData;
+        headerRow = headerRowData;
+      },
+    );
+    this.populateFirstRow(worksheet, firstRow);
+
+    this.populateHeaderRow(
+      worksheet,
+      headerRow,
+      testCaseGroupDto.testCaseExecutionResults[0],
+    );
+
+    testCasesData.forEach((testCaseData) => {
+      worksheet.addRow(testCaseData);
+    });
+    this.adjustColumnWidth(worksheet);
+  }
+
+  private getPopulations = (testCaseExcelExportDto: TestCaseExcelExportDto) => {
+    let populations: PopulationDto[] = [];
+    testCaseExcelExportDto.testCaseExecutionResults?.forEach(
+      (result: TestCaseExecutionResultDto) => {
+        if (result.populations?.length > 0) {
+          populations = result.populations;
+        }
+      },
+    );
+    return populations;
+  };
+
+  private populateTestCaseExpectedAndActual(
+    testCaseData,
+    result: TestCaseExecutionResultDto,
+    population: PopulationDto,
+  ) {
+    let foundPopulation: PopulationDto = null;
+    result.populations?.forEach((currentPopulation) => {
+      if (currentPopulation.name === population.name) {
+        foundPopulation = currentPopulation;
+      }
+    });
+    testCaseData.push(foundPopulation?.expected, foundPopulation?.actual);
+    return foundPopulation;
+  }
+
+  private populateFirstRow(worksheet, firstRowData) {
+    worksheet.addRow(firstRowData);
+    const firstRow = worksheet.getRow(1);
+    firstRow.eachCell((cell) => {
+      cell.font = { ...defaultKeySheetFontStyle, bold: true };
+      cell.alignment = defaultKeySheetAlignmentStyle;
+      cell.border = {
+        bottom: defaultKeySheetBorderStyle,
+        right: defaultKeySheetBorderStyle,
+      };
+    });
+  }
+  private populateHeaderRow(
+    worksheet,
+    headerRowData,
+    result: TestCaseExecutionResultDto,
+  ) {
+    headerRowData.push(
+      'notes',
+      'last',
+      'first',
+      'birthdate',
+      'expired',
+      'deathdate',
+      'ethnicity',
+      'race',
+      'gender',
+    );
+    if (result.definitions && result.definitions.length > 0) {
+      result.definitions.forEach((definition) => {
+        headerRowData.push(definition.logic);
+      });
+    }
+    if (result.functions && result.functions.length > 0) {
+      result.functions.forEach((func) => {
+        headerRowData.push(func.logic);
+      });
+    }
+    worksheet.addRow(headerRowData);
+    const headerRow = worksheet.getRow(2);
+    headerRow.eachCell((cell) => {
+      cell.font = { ...defaultKeySheetFontStyle, size: 12 };
+      cell.alignment = defaultKeySheetAlignmentStyle;
+      cell.border = {
+        bottom: defaultKeySheetBorderStyle,
+        right: defaultKeySheetBorderStyle,
+      };
+    });
+  }
+
+  private populateTestCase(testCaseData, result: TestCaseExecutionResultDto) {
+    testCaseData.push(
+      '',
+      result.last,
+      result.first,
+      result.birthdate,
+      'FALSE',
+      '',
+      result.ethnicity,
+      result.race,
+      result.gender,
+    );
+    if (result.definitions && result.definitions.length > 0) {
+      result.definitions.forEach((definition) => {
+        testCaseData.push(definition.actual);
+      });
+    }
+    if (result.functions && result.functions.length > 0) {
+      result.functions.forEach((func) => {
+        testCaseData.push(func.actual);
+      });
+    }
+  }
+
+  private adjustColumnWidth(worksheet) {
+    worksheet.columns.forEach((column) => {
+      const lengths = column.values.map((v) => v.toString().length);
+      const values = column.values.map((v) => v.toString());
+      const maxLength = Math.max(
+        ...lengths.filter((v) => typeof v === 'number'),
+      );
+      if (values?.[2]?.includes('define')) {
+        column.width = 40;
+      } else {
+        column.width = maxLength + 3;
+      }
+      column.height = 40;
     });
   }
 }
