@@ -1,14 +1,36 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ExportController } from './export.controller';
-import { Response } from 'express';
+import { Response, Request } from 'express';
 
 import { ExportService } from '../services/export.service';
 import { JwtService } from '@nestjs/jwt';
 import {} from 'node-mocks-http';
+import { TestCaseExcelExportDto } from '@madie/madie-models';
 
 describe('exportController', () => {
   let exportController: ExportController;
   let exportService: ExportService;
+  const exportDto: TestCaseExcelExportDto = {
+    groupId: 'testGroupId',
+    groupNumber: '1',
+    testCaseExecutionResults: [
+      {
+        populations: [],
+        notes: '',
+        last: 'testSeries1',
+        first: 'testTitle1',
+        birthdate: '',
+        expired: '',
+        deathdate: '',
+        ethnicity: null,
+        race: null,
+        gender: null,
+        definitions: [],
+        functions: [],
+      },
+    ],
+  };
+  let exportDtos: TestCaseExcelExportDto[];
 
   beforeEach(async () => {
     const app: TestingModule = await Test.createTestingModule({
@@ -18,19 +40,12 @@ describe('exportController', () => {
 
     exportController = app.get<ExportController>(ExportController);
     exportService = app.get<ExportService>(ExportService);
+
+    exportDtos = [];
+    exportDtos.push(exportDto);
   });
 
   describe('root', () => {
-    it('should return "OK"', async () => {
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const httpMocks = require('node-mocks-http');
-
-      const response: Response = httpMocks.createResponse() as Response;
-
-      await expect(exportController.getExcelFile(response)).toBeDefined();
-      //expect(res.statusCode).toEqual(200);
-    });
-
     it('should call generateXlsx method of excelService', async () => {
       jest
         .spyOn(exportService, 'generateXlsx')
@@ -39,7 +54,9 @@ describe('exportController', () => {
         header: jest.fn(),
         send: jest.fn(),
       };
-      await exportController.getExcelFile(res as Response);
+
+      const request: Request = { body: exportDtos } as Request;
+      await exportController.getExcelFile(request, res as Response);
       expect(exportService.generateXlsx).toHaveBeenCalledTimes(1);
     });
     it('should send the generated Excel file as the response', async () => {
@@ -51,7 +68,8 @@ describe('exportController', () => {
         header: jest.fn(),
         send: jest.fn(),
       };
-      await exportController.getExcelFile(res as Response);
+      const request: Request = { body: exportDtos } as Request;
+      await exportController.getExcelFile(request, res as Response);
       expect(res.send).toHaveBeenCalledWith(mockedExcelBuffer);
     });
   });
