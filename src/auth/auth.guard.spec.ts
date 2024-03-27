@@ -130,4 +130,44 @@ describe('AuthGuard', () => {
       expect(e.message).toBe('Token not present');
     }
   });
+
+  it('should throw UnauthorizedException without Authorization in header', async () => {
+    const mockExecutionContext = createMock<ExecutionContext>();
+    expect(mockExecutionContext.switchToHttp()).toBeDefined();
+
+    mockExecutionContext.switchToHttp = jest.fn().mockResolvedValue({
+      getRequest: () => ({
+        originalUrl: '/',
+        method: 'GET',
+        params: undefined,
+        query: undefined,
+        body: undefined,
+      }),
+      getResponse: () => ({
+        statusCode: 200,
+      }),
+    });
+
+    jest
+      .spyOn(mockExecutionContext.switchToHttp(), 'getRequest')
+      .mockImplementation(() => {
+        return {
+          originalUrl: '/',
+          method: 'GET',
+          params: undefined,
+          query: undefined,
+          body: undefined,
+          headers: {
+            authorize:
+              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.kcPmFlSUdC9LvuMufomQepInu3GwbBKKct49e2dxyrI',
+          },
+        } as unknown as Request;
+      });
+
+    try {
+      await guard.canActivate(mockExecutionContext);
+    } catch (e) {
+      expect(e.message).toBe('Token not present');
+    }
+  });
 });
