@@ -144,6 +144,9 @@ export class ExportService {
     let firstRow = [];
     let headerRow = [];
     const testCasesData = [];
+    //failed test cases will have red text font
+    const failedIndexes = [];
+    let index: number = 3;
     testCaseGroupDto.testCaseExecutionResults.forEach(
       (result: TestCaseExecutionResultDto) => {
         const firstRowData = [];
@@ -151,6 +154,7 @@ export class ExportService {
         const testCaseData = [];
         const populations: PopulationDto[] =
           this.getPopulations(testCaseGroupDto);
+
         populations?.forEach((population) => {
           firstRowData.push('Expected', 'Actual');
           headerRowData.push(population.name, population.name);
@@ -158,6 +162,8 @@ export class ExportService {
             testCaseData,
             result,
             population,
+            index,
+            failedIndexes,
           );
         });
 
@@ -165,6 +171,7 @@ export class ExportService {
         testCasesData.push(testCaseData);
         firstRow = firstRowData;
         headerRow = headerRowData;
+        index += 1;
       },
     );
     this.populateFirstRow(worksheet, firstRow);
@@ -177,6 +184,9 @@ export class ExportService {
 
     testCasesData.forEach((testCaseData) => {
       worksheet.addRow(testCaseData);
+    });
+    failedIndexes.forEach((index) => {
+      worksheet.getRow(index).font = { color: { argb: 'ff0000' } };
     });
     this.adjustColumnWidth(worksheet);
   }
@@ -197,6 +207,8 @@ export class ExportService {
     testCaseData,
     result: TestCaseExecutionResultDto,
     population: PopulationDto,
+    index: number,
+    failedIndexes: number[],
   ) {
     let foundPopulation: PopulationDto = null;
     result.populations?.forEach((currentPopulation) => {
@@ -205,6 +217,12 @@ export class ExportService {
       }
     });
     testCaseData.push(foundPopulation?.expected, foundPopulation?.actual);
+    if (foundPopulation?.expected !== foundPopulation?.actual) {
+      if (failedIndexes.indexOf(index) === -1) {
+        //if not in the array
+        failedIndexes.push(index);
+      }
+    }
     return foundPopulation;
   }
 
