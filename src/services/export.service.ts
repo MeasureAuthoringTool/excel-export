@@ -199,6 +199,7 @@ export class ExportService {
         testCasesData.push(testCaseData);
         firstRow = firstRowData;
         headerRow = headerRowData;
+        index += 1;
       },
     );
     this.populateFirstRow(worksheet, firstRow);

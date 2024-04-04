@@ -82,6 +82,42 @@ describe('ExcelService', () => {
           },
         ],
       },
+      {
+        testCaseId: 'testCaseId2',
+        populations: [
+          {
+            name: 'initialPopulation',
+            expected: 2,
+            actual: 2,
+            pass: true,
+          },
+        ],
+        notes: '',
+        last: 'testSeries2',
+        first: 'testTitle2',
+        birthdate: '11/12/1972',
+        expired: '',
+        deathdate: '',
+        ethnicity: 'Hispanic or Latino',
+        race: 'Other Race',
+        gender: 'Female',
+        definitions: [
+          {
+            logic: 'define "Denominator":\n  "Initial Population"',
+            actual: 'UNHIT',
+          },
+        ],
+        functions: [
+          {
+            logic: 'HospitalizationWithObservation',
+            actual: 'FUNCTION',
+          },
+          {
+            logic: 'NormalizeInterval',
+            actual: 'FUNCTION',
+          },
+        ],
+      },
     ],
   };
   beforeEach(() => {
@@ -202,6 +238,25 @@ describe('ExcelService', () => {
     expect(worksheet.getCell(3, 12).value).toBe('UNHIT');
     expect(worksheet.getCell(3, 13).value).toBe('FUNCTION');
     expect(worksheet.getCell(3, 14).value).toBe('FUNCTION');
+    //failed test test cases font color is red
+    expect(worksheet.getRow(3).font.color.argb).toBe('ff0000');
+
+    expect(worksheet.getCell(4, 1).value).toBe(2);
+    expect(worksheet.getCell(4, 2).value).toBe(2);
+    expect(worksheet.getCell(4, 3).value).toBe('');
+    expect(worksheet.getCell(4, 4).value).toBe('testSeries2');
+    expect(worksheet.getCell(4, 5).value).toBe('testTitle2');
+    expect(worksheet.getCell(4, 6).value).toBe('11/12/1972');
+    expect(worksheet.getCell(4, 7).value).toBe('FALSE');
+    expect(worksheet.getCell(4, 8).value).toBe('');
+    expect(worksheet.getCell(4, 9).value).toBe('Hispanic or Latino');
+    expect(worksheet.getCell(4, 10).value).toBe('Other Race');
+    expect(worksheet.getCell(4, 11).value).toBe('Female');
+    expect(worksheet.getCell(4, 12).value).toBe('UNHIT');
+    expect(worksheet.getCell(4, 13).value).toBe('FUNCTION');
+    expect(worksheet.getCell(4, 14).value).toBe('FUNCTION');
+    //success test test cases font color is not red (undefined)
+    expect(worksheet.getRow(4).font).toBe(undefined);
   });
 
   it('test generateXlsx', async () => {
