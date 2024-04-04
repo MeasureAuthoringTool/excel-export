@@ -5,7 +5,6 @@ export async function bootstrap() {
   const app = await NestFactory.create(ExportModule, {
     logger: ['error', 'log'],
   });
-  app.enableCors();
   await app.listen(3000);
 }
 bootstrap();
