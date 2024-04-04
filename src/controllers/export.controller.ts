@@ -3,6 +3,7 @@ import { Response, Request } from 'express';
 import { ExportService } from '../services/export.service';
 import { AuthGuard } from '../auth/auth.guard';
 import { TestCaseExcelExportDto } from '@madie/madie-models';
+import { log } from 'console';
 
 @Controller('excel')
 @UseGuards(AuthGuard)
@@ -18,6 +19,7 @@ export class ExportController {
   async getExcelFile(@Req() req: Request, @Res() res: Response) {
     const testCaseGroupDtos: TestCaseExcelExportDto[] =
       req.body.testCaseExcelExportDtos;
+    log('request -> ' + JSON.stringify(testCaseGroupDtos));
     const buffer = await this.exportService.generateXlsx(testCaseGroupDtos);
     res.send(buffer);
   }

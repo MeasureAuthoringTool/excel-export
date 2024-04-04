@@ -15,6 +15,7 @@ describe('exportController', () => {
     groupNumber: '1',
     testCaseExecutionResults: [
       {
+        testCaseId: 'testCaseId',
         populations: [],
         notes: '',
         last: 'testSeries1',
