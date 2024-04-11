@@ -15,8 +15,8 @@
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "ISSUER=\"https://dev-18092578.okta.com/oauth2/default\"  CLIENT_ID=\"0oa2fqtaz95fqJqbf5d7\" jest",
-    "test:watch": "  jest --watch",
-    "test:cov": "jest --coverage",
+    "test:watch": "ISSUER=\"https://dev-18092578.okta.com/oauth2/default\"  CLIENT_ID=\"0oa2fqtaz95fqJqbf5d7\"   jest --watch",
+    "test:cov": "ISSUER=\"https://dev-18092578.okta.com/oauth2/default\"  CLIENT_ID=\"0oa2fqtaz95fqJqbf5d7\"  jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
