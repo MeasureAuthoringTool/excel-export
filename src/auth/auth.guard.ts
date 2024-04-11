@@ -12,21 +12,26 @@ import { Request } from 'express';
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(private jwtService: JwtService) {}
-  
-  
+
   async canActivate(context: ExecutionContext): Promise<boolean> {
+    
     const oktaJwtVerifier = new OktaJwtVerifier({
       issuer: process.env.ISSUER,
-      clientId: process.env.CLIENT_ID
-    })
-
+      clientId: process.env.CLIENT_ID,
+    });
+    
     const request = context.switchToHttp().getRequest();
     const token = this.extractTokenFromHeader(request);
+    
     if (!token) {
       throw new UnauthorizedException('Token not present');
     }
-    try {    
-      const oktaToken = await oktaJwtVerifier.verifyAccessToken(token, 'api://default')
+    try {
+      console.log('Token', token);
+      const oktaToken = await oktaJwtVerifier.verifyAccessToken(
+        token,
+        'api://default',
+      );
       request['user'] = oktaToken.claims.sub;
     } catch {
       throw new UnauthorizedException('Token not valid');
