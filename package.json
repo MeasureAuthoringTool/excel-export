@@ -9,7 +9,7 @@
     "build": "nest build",
     "precommit": "npm run lint && npm test",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "start": "JWT_SECRET=ThisIsMySecret nest start",
+    "start": "nest start",
     "start:dev": "ISSUER=\"https://dev-18092578.okta.com/oauth2/default\"  CLIENT_ID=\"0oa2fqtaz95fqJqbf5d7\" nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
