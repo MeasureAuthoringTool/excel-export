@@ -26,7 +26,6 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException('Token not present');
     }
     try {
-      console.log('Token', token);
       const oktaToken = await oktaJwtVerifier.verifyAccessToken(
         token,
         'api://default',
