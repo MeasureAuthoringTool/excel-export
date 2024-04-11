@@ -14,15 +14,14 @@ export class AuthGuard implements CanActivate {
   constructor(private jwtService: JwtService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    
     const oktaJwtVerifier = new OktaJwtVerifier({
       issuer: process.env.ISSUER,
       clientId: process.env.CLIENT_ID,
     });
-    
+
     const request = context.switchToHttp().getRequest();
     const token = this.extractTokenFromHeader(request);
-    
+
     if (!token) {
       throw new UnauthorizedException('Token not present');
     }
