@@ -42,7 +42,7 @@ describe('AuthGuard', () => {
         verifyAccessToken: () => ({
           oktaToken: {
             claims: {
-              sub: 'testUser@testcompany.com',
+              sub: 'aUser@company.com',
             },
           },
         }),
