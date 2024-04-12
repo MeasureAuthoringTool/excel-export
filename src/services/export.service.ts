@@ -14,6 +14,8 @@ import {
   TestCaseExecutionResultDto,
   TestCaseExcelExportDto,
   PopulationDto,
+  StratificationDto,
+  GroupedStratificationDto,
 } from '@madie/madie-models';
 
 @Injectable()
@@ -28,14 +30,33 @@ export class ExportService {
     this.generateKeyWorksheet(keyWorkSheet);
 
     //Generate other worksheets as needed
-    const groupNumber = testCaseExcelExportDtos[0].groupNumber;
-    const populationWorksheet = workbook.addWorksheet(
-      `${groupNumber} - Population Criteria Section`,
-    );
-    this.generatePopulationWorksheet(
-      populationWorksheet,
-      testCaseExcelExportDtos[0],
-    );
+    let index: number = 1;
+    testCaseExcelExportDtos.forEach((testCaseExcelExportDto) => {
+      const populationWorksheet = workbook.addWorksheet(
+        `${index} - Population Criteria Section`,
+      );
+      this.generatePopulationWorksheet(
+        populationWorksheet,
+        testCaseExcelExportDto,
+      );
+      index += 1;
+    });
+
+    testCaseExcelExportDtos.forEach((testCaseExcelExportDto) => {
+      testCaseExcelExportDto.testCaseExecutionResults.forEach((result) => {
+        result.stratifications?.forEach((stratification) => {
+          const stratificationWorksheet = workbook.addWorksheet(
+            `${index} - ${stratification.stratName}`,
+          );
+          this.generateStratificationWorksheet(
+            stratificationWorksheet,
+            testCaseExcelExportDto,
+            stratification,
+          );
+          index += 1;
+        });
+      });
+    });
 
     // Return final workbook
     return workbook.xlsx.writeBuffer() as Promise<Buffer>;
@@ -155,16 +176,23 @@ export class ExportService {
         const populations: PopulationDto[] =
           this.getPopulations(testCaseGroupDto);
 
+        const numValues: number = populations?.length;
+        this.getFirstRowData(firstRowData, numValues);
+
         populations?.forEach((population) => {
-          firstRowData.push('Expected', 'Actual');
-          headerRowData.push(population.name, population.name);
-          this.populateTestCaseExpectedAndActual(
+          headerRowData.push(population.name);
+          this.populatePopExpected(
             testCaseData,
-            result,
             population,
+            result,
             index,
             failedIndexes,
           );
+          index += 1;
+        });
+        populations?.forEach((population) => {
+          headerRowData.push(population.name);
+          this.populatePopActual(testCaseData, population, result);
         });
 
         this.populateTestCase(testCaseData, result);
@@ -191,40 +219,44 @@ export class ExportService {
     this.adjustColumnWidth(worksheet);
   }
 
-  private getPopulations = (testCaseExcelExportDto: TestCaseExcelExportDto) => {
-    let populations: PopulationDto[] = [];
-    testCaseExcelExportDto.testCaseExecutionResults?.forEach(
-      (result: TestCaseExecutionResultDto) => {
-        if (result.populations?.length > 0) {
-          populations = result.populations;
-        }
-      },
-    );
-    return populations;
-  };
-
-  private populateTestCaseExpectedAndActual(
+  private populatePopExpected(
     testCaseData,
-    result: TestCaseExecutionResultDto,
-    population: PopulationDto,
+    populationDto: PopulationDto,
+    result,
     index: number,
     failedIndexes: number[],
   ) {
     let foundPopulation: PopulationDto = null;
     result.populations?.forEach((currentPopulation) => {
-      if (currentPopulation.name === population.name) {
+      if (currentPopulation.name === populationDto.name) {
         foundPopulation = currentPopulation;
       }
     });
-    testCaseData.push(foundPopulation?.expected, foundPopulation?.actual);
     if (foundPopulation?.expected !== foundPopulation?.actual) {
       if (failedIndexes.indexOf(index) === -1) {
         //if not in the array
         failedIndexes.push(index);
       }
     }
-    return foundPopulation;
+    testCaseData.push(foundPopulation?.expected);
   }
+  private populatePopActual(
+    testCaseData,
+    populationDto: PopulationDto,
+    result,
+  ) {
+    const foundPopulation: PopulationDto = result.populations?.find(
+      (currentPopulation) => currentPopulation.name === populationDto.name,
+    );
+    testCaseData.push(foundPopulation?.actual);
+  }
+
+  private getPopulations = (testCaseExcelExportDto: TestCaseExcelExportDto) => {
+    const result = testCaseExcelExportDto.testCaseExecutionResults?.find(
+      (result) => result.populations?.length > 0,
+    );
+    return result ? result.populations : [];
+  };
 
   private populateFirstRow(worksheet, firstRowData) {
     worksheet.addRow(firstRowData);
@@ -314,5 +346,91 @@ export class ExportService {
       }
       column.height = 40;
     });
+  }
+
+  public generateStratificationWorksheet(
+    worksheet: ExcelJS.Worksheet,
+    testCaseGroupDto: TestCaseExcelExportDto,
+    groupedStratificationDto: GroupedStratificationDto,
+  ) {
+    let firstRow = [];
+    let headerRow = [];
+    const testCasesData = [];
+
+    //failed test cases will have red text font
+    const failedIndexes = [];
+    let index: number = 3;
+
+    testCaseGroupDto.testCaseExecutionResults.forEach(
+      (result: TestCaseExecutionResultDto) => {
+        const firstRowData = [];
+        const headerRowData = [];
+        const testCaseData = [];
+
+        const numValues: number =
+          groupedStratificationDto.stratificationDtos?.length;
+        this.getFirstRowData(firstRowData, numValues);
+
+        groupedStratificationDto.stratificationDtos?.forEach((strat) => {
+          headerRowData.push(strat.name);
+          this.populateStratExpected(testCaseData, strat, index, failedIndexes);
+          index += 1;
+        });
+
+        groupedStratificationDto.stratificationDtos?.forEach((strat) => {
+          headerRowData.push(strat.name);
+          this.populateStratActual(testCaseData, strat);
+        });
+
+        this.populateTestCase(testCaseData, result);
+        testCasesData.push(testCaseData);
+        firstRow = firstRowData;
+        headerRow = headerRowData;
+      },
+    );
+    this.populateFirstRow(worksheet, firstRow);
+
+    this.populateHeaderRow(
+      worksheet,
+      headerRow,
+      testCaseGroupDto.testCaseExecutionResults[0],
+    );
+
+    testCasesData.forEach((testCaseData) => {
+      worksheet.addRow(testCaseData);
+    });
+    failedIndexes.forEach((index) => {
+      worksheet.getRow(index).font = { color: { argb: 'ff0000' } };
+    });
+    this.adjustColumnWidth(worksheet);
+  }
+
+  private populateStratExpected(
+    testCaseData,
+    stratificationDto: StratificationDto,
+    index: number,
+    failedIndexes,
+  ) {
+    testCaseData.push(stratificationDto?.expected);
+    if (stratificationDto?.expected !== stratificationDto?.actual) {
+      if (failedIndexes.indexOf(index) === -1) {
+        //if not in the array
+        failedIndexes.push(index);
+      }
+    }
+  }
+  private populateStratActual(
+    testCaseData,
+    stratificationDto: StratificationDto,
+  ) {
+    testCaseData.push(stratificationDto?.actual);
+  }
+
+  private getFirstRowData(firstRowData, numValues: number) {
+    firstRowData.push('Expected');
+    for (let i = 0; i < numValues - 1; i++) {
+      firstRowData.push(' ');
+    }
+    firstRowData.push('Actual');
   }
 }

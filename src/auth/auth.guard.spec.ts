@@ -37,6 +37,18 @@ describe('AuthGuard', () => {
       }),
     });
 
+    jest.mock('@okta/jwt-verifier', () => {
+      return jest.fn().mockImplementation(() => ({
+        verifyAccessToken: () => ({
+          oktaToken: {
+            claims: {
+              sub: 'a_user',
+            },
+          },
+        }),
+      }));
+    });
+
     jest
       .spyOn(mockExecutionContext.switchToHttp(), 'getRequest')
       .mockImplementation(() => {
@@ -48,7 +60,7 @@ describe('AuthGuard', () => {
           body: undefined,
           headers: {
             authorization:
-              'Bearer eyJraWQiOiJNNG9CMW9DSmthdC0tYTNENFFXUFA3RWZCbUl3NG9BV05KYWJxdEJhUnM4IiwiYWxnIjoiUlMyNTYifQ.eyJ2ZXIiOjEsImp0aSI6IkFULlBlN3hEc000MksyTnhHSW5vSWV1UEVEVmgxY3YydDVqQ1FKZmU1Sm9ZbkUiLCJpc3MiOiJodHRwczovL2Rldi0xODA5MjU3OC5va3RhLmNvbS9vYXV0aDIvZGVmYXVsdCIsImF1ZCI6ImFwaTovL2RlZmF1bHQiLCJpYXQiOjE3MTI4NjMyNzcsImV4cCI6MTcxMjg2Njg3NywiY2lkIjoiMG9hMmZxdGF6OTVmcUpxYmY1ZDciLCJ1aWQiOiIwMHUyNWh3c3AxUG04MW5jTzVkNyIsInNjcCI6WyJvcGVuaWQiLCJlbWFpbCIsInByb2ZpbGUiXSwiYXV0aF90aW1lIjoxNzEyODYzMjc2LCJzdWIiOiJncmVnb3J5LmFraW5zQHNlbWFudGljYml0cy5jb20ifQ.nptyxgS8-o0hn29fhnZ7fOb5_pC4eSCTgxjzj7ZUvJ3-qqoEMx25uYJNLc5_EDQlTVEA6IpZPhioJXwEG8DEFc3nFu7iur5gUqK2n1EEKrSMUyRTUSauZKtAKu1KwQZ03DU786EdT6zQcKueeFJxV3UGPIyZKu9yiJZc6Kcz6-0XOo74Zc6ZIpPdn6eggdvm9bHf0FuDWW6XnlvGcl8Uf-7-RdviZTUuowuIinAeMowmnC294fe_JSJAdCzeeh75EOjz6uqrjysFfjf57YX0tJVjdZmHPvesmqWTTzcDBbx0iA-GS9TpVHHKABQGYmZoXmSDLgHDKfCBnGERL_bG1w',
+              'Bearer eyJraWQiOiJNNG9CMW9DSmthdC0tYTNENFFXUFA3RWZCbUl3NG9BV05KYWJxdEJhUnM4IiwiYWxnIjoiUlMyNTYifQ.eyJ2ZXIiOjEsImp0aSI6IkFULl8xc1BEY0hpekhSdm5CSlZsaWQzak5tVXZjMDIzU3FCZDB0UUhnVldkT0EiLCJpc3MiOiJodHRwczovL2Rldi0xODA5MjU3OC5va3RhLmNvbS9vYXV0aDIvZGVmYXVsdCIsImF1ZCI6ImFwaTovL2RlZmF1bHQiLCJpYXQiOjE3MTI5MzcwNjQsImV4cCI6MTcxMjk0MDY2NCwiY2lkIjoiMG9hMmZxdGF6OTVmcUpxYmY1ZDciLCJ1aWQiOiIwMHUzaTNjM3p6WlhLcjkwMTVkNyIsInNjcCI6WyJvcGVuaWQiLCJwcm9maWxlIl0sImF1dGhfdGltZSI6MTcxMjkzMjU5NSwic3ViIjoiY2VjaWxpYS5saXVAc2VtYW50aWNiaXRzLmNvbSJ9.x_vx7uCGXPyme80erURcS87ZUdibdBRKiNB58yg-AcNoF0ZYoro0lOr9up-ev0j32SQvBnhMXRZOARoOy4ALcT_GovwluH2v_sjXhNtjn26GV5UZU1EaWXsdMWfwg_-6eAmlQ9dLkIZerIYsu7Ut8pfwirgbpME4mMKqiJBXEkRWHUkAh5PEnJO4DvaKj6Tis5ERprNLuUKR5M4bWMhBjAMt74fTu5iLiANOi0uqropZscP72HVNEQhkyqM84hvgAvZvzlVYKUTUBuoWQF21eRSOUpYSE0yvDRW5JS5r0NCXUEZwuNfavuvl3gDUae31hcbtOo7kznQ2Q_-GkfVThA',
           },
         } as unknown as Request;
       });

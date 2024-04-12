@@ -10,11 +10,13 @@ describe('ExcelService', () => {
     groupNumber: '1',
     testCaseExecutionResults: [
       {
+        testCaseId: 'testCaseId1',
         populations: [
           {
             name: 'initialPopulation',
             expected: 1,
             actual: 2,
+            pass: false,
           },
         ],
         notes: '',
@@ -42,13 +44,52 @@ describe('ExcelService', () => {
             actual: 'FUNCTION',
           },
         ],
+        stratifications: [
+          {
+            testCaseId: 'testCaseId1',
+            stratId: 'stratId1',
+            stratName: 'PopSet1 Stratification 1',
+            stratificationDtos: [
+              {
+                id: 'stratId1',
+                name: 'STRAT',
+                expected: 11,
+                actual: 0,
+                pass: false,
+              },
+              {
+                id: 'f0b3c08d-1164-48d8-bc71-aed87499099f',
+                name: 'initialPopulation',
+                expected: 11,
+                actual: 0,
+                pass: false,
+              },
+              {
+                id: 'f0b3c08d-1164-48d8-bc71-aed87499099f',
+                name: 'denominator',
+                expected: 11,
+                actual: 0,
+                pass: false,
+              },
+              {
+                id: 'f0b3c08d-1164-48d8-bc71-aed87499099f',
+                name: 'numerator',
+                expected: 11,
+                actual: 0,
+                pass: false,
+              },
+            ],
+          },
+        ],
       },
       {
+        testCaseId: 'testCaseId2',
         populations: [
           {
             name: 'initialPopulation',
             expected: 2,
             actual: 2,
+            pass: true,
           },
         ],
         notes: '',
@@ -233,5 +274,31 @@ describe('ExcelService', () => {
       '1 - Population Criteria Section',
     );
     expect(populationCriteria1WorkSheet).not.toBe(null);
+
+    const strat1WorkSheet = workbook.getWorksheet(
+      '2 - PopSet1 Stratification 1',
+    );
+    expect(strat1WorkSheet).not.toBe(null);
+    expect(strat1WorkSheet.getRows.length).toBe(2);
+    expect(strat1WorkSheet.getCell(1, 1).value).toBe('Expected');
+    expect(strat1WorkSheet.getCell(1, 5).value).toBe('Actual');
+
+    expect(strat1WorkSheet.getCell(2, 1).value).toBe('STRAT');
+    expect(strat1WorkSheet.getCell(2, 2).value).toBe('initialPopulation');
+    expect(strat1WorkSheet.getCell(2, 3).value).toBe('denominator');
+    expect(strat1WorkSheet.getCell(2, 4).value).toBe('numerator');
+    expect(strat1WorkSheet.getCell(2, 5).value).toBe('STRAT');
+    expect(strat1WorkSheet.getCell(2, 6).value).toBe('initialPopulation');
+    expect(strat1WorkSheet.getCell(2, 7).value).toBe('denominator');
+    expect(strat1WorkSheet.getCell(2, 8).value).toBe('numerator');
+
+    expect(strat1WorkSheet.getCell(3, 1).value).toBe(11);
+    expect(strat1WorkSheet.getCell(3, 2).value).toBe(11);
+    expect(strat1WorkSheet.getCell(3, 3).value).toBe(11);
+    expect(strat1WorkSheet.getCell(3, 4).value).toBe(11);
+    expect(strat1WorkSheet.getCell(3, 5).value).toBe(0);
+    expect(strat1WorkSheet.getCell(3, 6).value).toBe(0);
+    expect(strat1WorkSheet.getCell(3, 7).value).toBe(0);
+    expect(strat1WorkSheet.getCell(3, 8).value).toBe(0);
   });
 });
