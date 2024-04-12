@@ -245,25 +245,17 @@ export class ExportService {
     populationDto: PopulationDto,
     result,
   ) {
-    let foundPopulation: PopulationDto = null;
-    result.populations?.forEach((currentPopulation) => {
-      if (currentPopulation.name === populationDto.name) {
-        foundPopulation = currentPopulation;
-      }
-    });
+    const foundPopulation: PopulationDto = result.populations?.find(
+      (currentPopulation) => currentPopulation.name === populationDto.name,
+    );
     testCaseData.push(foundPopulation?.actual);
   }
 
   private getPopulations = (testCaseExcelExportDto: TestCaseExcelExportDto) => {
-    let populations: PopulationDto[] = [];
-    testCaseExcelExportDto.testCaseExecutionResults?.forEach(
-      (result: TestCaseExecutionResultDto) => {
-        if (result.populations?.length > 0) {
-          populations = result.populations;
-        }
-      },
+    const result = testCaseExcelExportDto.testCaseExecutionResults?.find(
+      (result) => result.populations?.length > 0,
     );
-    return populations;
+    return result ? result.populations : [];
   };
 
   private populateFirstRow(worksheet, firstRowData) {

@@ -42,7 +42,7 @@ describe('AuthGuard', () => {
         verifyAccessToken: () => ({
           oktaToken: {
             claims: {
-              sub: 'aUser@company.com',
+              sub: 'a_user@acompany.com',
             },
           },
         }),
@@ -60,7 +60,7 @@ describe('AuthGuard', () => {
           body: undefined,
           headers: {
             authorization:
-              'Bearer eyJraWQiOiJNNG9CMW9DSmthdC0tYTNENFFXUFA3RWZCbUl3NG9BV05KYWJxdEJhUnM4IiwiYWxnIjoiUlMyNTYifQ.eyJ2ZXIiOjEsImp0aSI6IkFULmRQdFdGMndrYlN5VjJxVW1BanQ0dXBERklwOExMT2poRFl4MWxzYWJkaWciLCJpc3MiOiJodHRwczovL2Rldi0xODA5MjU3OC5va3RhLmNvbS9vYXV0aDIvZGVmYXVsdCIsImF1ZCI6ImFwaTovL2RlZmF1bHQiLCJpYXQiOjE3MTI5MjYyNTIsImV4cCI6MTcxMjkyOTg1MiwiY2lkIjoiMG9hMmZxdGF6OTVmcUpxYmY1ZDciLCJ1aWQiOiIwMHUzaTNjM3p6WlhLcjkwMTVkNyIsInNjcCI6WyJwcm9maWxlIiwib3BlbmlkIl0sImF1dGhfdGltZSI6MTcxMjkyNjI1MSwic3ViIjoiY2VjaWxpYS5saXVAc2VtYW50aWNiaXRzLmNvbSJ9.bdZh7ygtJKvausHo58VGPLonPeWPAGXDFXHDY445ERxwCpNSiy-VdfZF3TZfg_s9k-XAwRGcd-T7lcy4dW9Qh6L74bdDucYX_TSR8WreLvS3W4o-uyRi0HQU8lB2axF2xqdB_UGEr79Am-TZhpQmwIQWXPTUpMr33fxun5ic6Tidq8WFgVVIBXTusKUHopaIP8z4gzapPo6hxLtJ6farGZcC1URHMk2o6DeyGuvO4i4y8vpowwqIHKLZ55P9kLgtbehC4LYPaRqoqWzngjF3Zy_4StmdxaFM2U_xulO5L3LysporElvVlU11HQAluXCff_PYYeV25u1Xbnp3_-W34Q',
+              'Bearer eyJraWQiOiJNNG9CMW9DSmthdC0tYTNENFFXUFA3RWZCbUl3NG9BV05KYWJxdEJhUnM4IiwiYWxnIjoiUlMyNTYifQ.eyJ2ZXIiOjEsImp0aSI6IkFULl8xc1BEY0hpekhSdm5CSlZsaWQzak5tVXZjMDIzU3FCZDB0UUhnVldkT0EiLCJpc3MiOiJodHRwczovL2Rldi0xODA5MjU3OC5va3RhLmNvbS9vYXV0aDIvZGVmYXVsdCIsImF1ZCI6ImFwaTovL2RlZmF1bHQiLCJpYXQiOjE3MTI5MzcwNjQsImV4cCI6MTcxMjk0MDY2NCwiY2lkIjoiMG9hMmZxdGF6OTVmcUpxYmY1ZDciLCJ1aWQiOiIwMHUzaTNjM3p6WlhLcjkwMTVkNyIsInNjcCI6WyJvcGVuaWQiLCJwcm9maWxlIl0sImF1dGhfdGltZSI6MTcxMjkzMjU5NSwic3ViIjoiY2VjaWxpYS5saXVAc2VtYW50aWNiaXRzLmNvbSJ9.x_vx7uCGXPyme80erURcS87ZUdibdBRKiNB58yg-AcNoF0ZYoro0lOr9up-ev0j32SQvBnhMXRZOARoOy4ALcT_GovwluH2v_sjXhNtjn26GV5UZU1EaWXsdMWfwg_-6eAmlQ9dLkIZerIYsu7Ut8pfwirgbpME4mMKqiJBXEkRWHUkAh5PEnJO4DvaKj6Tis5ERprNLuUKR5M4bWMhBjAMt74fTu5iLiANOi0uqropZscP72HVNEQhkyqM84hvgAvZvzlVYKUTUBuoWQF21eRSOUpYSE0yvDRW5JS5r0NCXUEZwuNfavuvl3gDUae31hcbtOo7kznQ2Q_-GkfVThA',
           },
         } as unknown as Request;
       });
