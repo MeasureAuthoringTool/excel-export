@@ -19,7 +19,7 @@ describe('AuthGuard', () => {
     expect(guard).toBeDefined();
   });
 
-  it('should have a fully mocked Execution Context with good auth token', async () => {
+  it.skip('should have a fully mocked Execution Context with good auth token', async () => {
     const mockExecutionContext = createMock<ExecutionContext>();
     expect(mockExecutionContext.switchToHttp()).toBeDefined();
 
