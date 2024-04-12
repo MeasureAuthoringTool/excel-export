@@ -19,7 +19,7 @@ describe('AuthGuard', () => {
     expect(guard).toBeDefined();
   });
 
-  it.skip('should have a fully mocked Execution Context with good auth token', async () => {
+  it('should have a fully mocked Execution Context with good auth token', async () => {
     const mockExecutionContext = createMock<ExecutionContext>();
     expect(mockExecutionContext.switchToHttp()).toBeDefined();
 
@@ -37,6 +37,18 @@ describe('AuthGuard', () => {
       }),
     });
 
+    jest.mock('@okta/jwt-verifier', () => {
+      return jest.fn().mockImplementation(() => ({
+        verifyAccessToken: () => ({
+          oktaToken: {
+            claims: {
+              sub: 'testUser@testcompany.com',
+            },
+          },
+        }),
+      }));
+    });
+
     jest
       .spyOn(mockExecutionContext.switchToHttp(), 'getRequest')
       .mockImplementation(() => {
@@ -48,7 +60,7 @@ describe('AuthGuard', () => {
           body: undefined,
           headers: {
             authorization:
-              'Bearer eyJraWQiOiJNNG9CMW9DSmthdC0tYTNENFFXUFA3RWZCbUl3NG9BV05KYWJxdEJhUnM4IiwiYWxnIjoiUlMyNTYifQ.eyJ2ZXIiOjEsImp0aSI6IkFULlBlN3hEc000MksyTnhHSW5vSWV1UEVEVmgxY3YydDVqQ1FKZmU1Sm9ZbkUiLCJpc3MiOiJodHRwczovL2Rldi0xODA5MjU3OC5va3RhLmNvbS9vYXV0aDIvZGVmYXVsdCIsImF1ZCI6ImFwaTovL2RlZmF1bHQiLCJpYXQiOjE3MTI4NjMyNzcsImV4cCI6MTcxMjg2Njg3NywiY2lkIjoiMG9hMmZxdGF6OTVmcUpxYmY1ZDciLCJ1aWQiOiIwMHUyNWh3c3AxUG04MW5jTzVkNyIsInNjcCI6WyJvcGVuaWQiLCJlbWFpbCIsInByb2ZpbGUiXSwiYXV0aF90aW1lIjoxNzEyODYzMjc2LCJzdWIiOiJncmVnb3J5LmFraW5zQHNlbWFudGljYml0cy5jb20ifQ.nptyxgS8-o0hn29fhnZ7fOb5_pC4eSCTgxjzj7ZUvJ3-qqoEMx25uYJNLc5_EDQlTVEA6IpZPhioJXwEG8DEFc3nFu7iur5gUqK2n1EEKrSMUyRTUSauZKtAKu1KwQZ03DU786EdT6zQcKueeFJxV3UGPIyZKu9yiJZc6Kcz6-0XOo74Zc6ZIpPdn6eggdvm9bHf0FuDWW6XnlvGcl8Uf-7-RdviZTUuowuIinAeMowmnC294fe_JSJAdCzeeh75EOjz6uqrjysFfjf57YX0tJVjdZmHPvesmqWTTzcDBbx0iA-GS9TpVHHKABQGYmZoXmSDLgHDKfCBnGERL_bG1w',
+              'Bearer eyJraWQiOiJNNG9CMW9DSmthdC0tYTNENFFXUFA3RWZCbUl3NG9BV05KYWJxdEJhUnM4IiwiYWxnIjoiUlMyNTYifQ.eyJ2ZXIiOjEsImp0aSI6IkFULmRQdFdGMndrYlN5VjJxVW1BanQ0dXBERklwOExMT2poRFl4MWxzYWJkaWciLCJpc3MiOiJodHRwczovL2Rldi0xODA5MjU3OC5va3RhLmNvbS9vYXV0aDIvZGVmYXVsdCIsImF1ZCI6ImFwaTovL2RlZmF1bHQiLCJpYXQiOjE3MTI5MjYyNTIsImV4cCI6MTcxMjkyOTg1MiwiY2lkIjoiMG9hMmZxdGF6OTVmcUpxYmY1ZDciLCJ1aWQiOiIwMHUzaTNjM3p6WlhLcjkwMTVkNyIsInNjcCI6WyJwcm9maWxlIiwib3BlbmlkIl0sImF1dGhfdGltZSI6MTcxMjkyNjI1MSwic3ViIjoiY2VjaWxpYS5saXVAc2VtYW50aWNiaXRzLmNvbSJ9.bdZh7ygtJKvausHo58VGPLonPeWPAGXDFXHDY445ERxwCpNSiy-VdfZF3TZfg_s9k-XAwRGcd-T7lcy4dW9Qh6L74bdDucYX_TSR8WreLvS3W4o-uyRi0HQU8lB2axF2xqdB_UGEr79Am-TZhpQmwIQWXPTUpMr33fxun5ic6Tidq8WFgVVIBXTusKUHopaIP8z4gzapPo6hxLtJ6farGZcC1URHMk2o6DeyGuvO4i4y8vpowwqIHKLZ55P9kLgtbehC4LYPaRqoqWzngjF3Zy_4StmdxaFM2U_xulO5L3LysporElvVlU11HQAluXCff_PYYeV25u1Xbnp3_-W34Q',
           },
         } as unknown as Request;
       });
