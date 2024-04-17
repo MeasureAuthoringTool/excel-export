@@ -8,15 +8,15 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import * as OktaJwtVerifier from '@okta/jwt-verifier';
 import { Request } from 'express';
+import * as process from 'process';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(private jwtService: JwtService) {}
 
-  async canActivate(context: ExecutionContext): Promise<boolean> {
+  canActivate(context: ExecutionContext): boolean {
     const oktaJwtVerifier = new OktaJwtVerifier({
       issuer: process.env.ISSUER,
-      clientId: process.env.CLIENT_ID,
     });
 
     const request = context.switchToHttp().getRequest();
@@ -25,15 +25,15 @@ export class AuthGuard implements CanActivate {
     if (!token) {
       throw new UnauthorizedException('Token not present');
     }
-    try {
-      const oktaToken = await oktaJwtVerifier.verifyAccessToken(
-        token,
-        'api://default',
-      );
-      request['user'] = oktaToken.claims.sub;
-    } catch {
-      throw new UnauthorizedException('Token not valid');
-    }
+    oktaJwtVerifier
+      .verifyAccessToken(token, `${process.env.CLIENT_ID}`)
+      .then((oktaToken) => {
+        request['user'] = oktaToken.claims.sub;
+      })
+      .catch((error) => {
+        console.debug('Error while verifying tokens', error);
+        throw new UnauthorizedException('Token not valid');
+      });
     return true;
   }
 
