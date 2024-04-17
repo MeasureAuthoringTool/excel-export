@@ -8,7 +8,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import * as OktaJwtVerifier from '@okta/jwt-verifier';
 import { Request } from 'express';
-import * as process from "process";
+import * as process from 'process';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
