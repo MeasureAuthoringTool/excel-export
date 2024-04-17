@@ -3,11 +3,31 @@ import { AuthGuard } from './auth.guard';
 import { JwtService } from '@nestjs/jwt';
 import { createMock } from '@golevelup/ts-jest';
 import { ExecutionContext } from '@nestjs/common';
+import { Jwt } from '@okta/jwt-verifier';
+import * as process from 'process';
+
+jest.mock('@okta/jwt-verifier', () => {
+  return jest.fn().mockImplementation(() => {
+    return {
+      verifyAccessToken: () =>
+        new Promise((resolve) =>
+          resolve({
+            claims: {
+              sub: 'a_user',
+            },
+          } as unknown as Jwt),
+        ),
+    };
+  });
+});
 
 describe('AuthGuard', () => {
   let guard: AuthGuard;
 
   beforeEach(async () => {
+    process.env.ISSUER = 'https://test-issuer.com';
+    process.env.CLIENT_ID = 'test-client-id';
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [JwtService],
     }).compile();
@@ -22,33 +42,6 @@ describe('AuthGuard', () => {
   it('should have a fully mocked Execution Context with good auth token', async () => {
     const mockExecutionContext = createMock<ExecutionContext>();
     expect(mockExecutionContext.switchToHttp()).toBeDefined();
-
-    mockExecutionContext.switchToHttp = jest.fn().mockResolvedValue({
-      getRequest: () => ({
-        originalUrl: '/',
-        method: 'GET',
-        params: undefined,
-        query: undefined,
-        body: undefined,
-        headers: '',
-      }),
-      getResponse: () => ({
-        statusCode: 200,
-      }),
-    });
-
-    jest.mock('@okta/jwt-verifier', () => {
-      return jest.fn().mockImplementation(() => ({
-        verifyAccessToken: () => ({
-          oktaToken: {
-            claims: {
-              sub: 'a_user',
-            },
-          },
-        }),
-      }));
-    });
-
     jest
       .spyOn(mockExecutionContext.switchToHttp(), 'getRequest')
       .mockImplementation(() => {
@@ -59,8 +52,7 @@ describe('AuthGuard', () => {
           query: undefined,
           body: undefined,
           headers: {
-            authorization:
-              'Bearer eyJraWQiOiJNNG9CMW9DSmthdC0tYTNENFFXUFA3RWZCbUl3NG9BV05KYWJxdEJhUnM4IiwiYWxnIjoiUlMyNTYifQ.eyJ2ZXIiOjEsImp0aSI6IkFULl8xc1BEY0hpekhSdm5CSlZsaWQzak5tVXZjMDIzU3FCZDB0UUhnVldkT0EiLCJpc3MiOiJodHRwczovL2Rldi0xODA5MjU3OC5va3RhLmNvbS9vYXV0aDIvZGVmYXVsdCIsImF1ZCI6ImFwaTovL2RlZmF1bHQiLCJpYXQiOjE3MTI5MzcwNjQsImV4cCI6MTcxMjk0MDY2NCwiY2lkIjoiMG9hMmZxdGF6OTVmcUpxYmY1ZDciLCJ1aWQiOiIwMHUzaTNjM3p6WlhLcjkwMTVkNyIsInNjcCI6WyJvcGVuaWQiLCJwcm9maWxlIl0sImF1dGhfdGltZSI6MTcxMjkzMjU5NSwic3ViIjoiY2VjaWxpYS5saXVAc2VtYW50aWNiaXRzLmNvbSJ9.x_vx7uCGXPyme80erURcS87ZUdibdBRKiNB58yg-AcNoF0ZYoro0lOr9up-ev0j32SQvBnhMXRZOARoOy4ALcT_GovwluH2v_sjXhNtjn26GV5UZU1EaWXsdMWfwg_-6eAmlQ9dLkIZerIYsu7Ut8pfwirgbpME4mMKqiJBXEkRWHUkAh5PEnJO4DvaKj6Tis5ERprNLuUKR5M4bWMhBjAMt74fTu5iLiANOi0uqropZscP72HVNEQhkyqM84hvgAvZvzlVYKUTUBuoWQF21eRSOUpYSE0yvDRW5JS5r0NCXUEZwuNfavuvl3gDUae31hcbtOo7kznQ2Q_-GkfVThA',
+            authorization: 'Bearer asdf',
           },
         } as unknown as Request;
       });
