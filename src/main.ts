@@ -6,8 +6,8 @@ export async function bootstrap() {
   const app = await NestFactory.create(ExportModule, {
     logger: ['error', 'log'],
   });
-  app.use(bodyParser.json({ limit: '50mb' }));
-  app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
+  app.use(bodyParser.json({ limit: '500mb' }));
+  app.use(bodyParser.urlencoded({ limit: '500mb', extended: true }));
   app.setGlobalPrefix('/api');
   app.enableCors({
     origin: [
