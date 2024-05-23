@@ -15,7 +15,6 @@ import {
   TestCaseExcelExportDto,
   PopulationDto,
   StratificationDto,
-  GroupedStratificationDto,
 } from '@madie/madie-models';
 
 @Injectable()
@@ -42,21 +41,35 @@ export class ExportService {
       index += 1;
     });
 
+    // collect all the distinct stratifications by stratification name
+    const stratNames = new Set<string>();
+    const stratNamesToGroup = {};
     testCaseExcelExportDtos.forEach((testCaseExcelExportDto) => {
       testCaseExcelExportDto.testCaseExecutionResults.forEach((result) => {
         result.stratifications?.forEach((stratification) => {
-          const stratificationWorksheet = workbook.addWorksheet(
-            `${index} - ${stratification.stratName}`,
-          );
-          this.generateStratificationWorksheet(
-            stratificationWorksheet,
-            testCaseExcelExportDto,
-            stratification,
-          );
-          index += 1;
+          stratNames.add(stratification.stratName);
+          stratNamesToGroup[stratification.stratName] =
+            testCaseExcelExportDto.groupId;
         });
       });
     });
+
+    // create a worksheet for each stratification
+    for (const stratName of stratNames) {
+      const groupId = stratNamesToGroup[stratName];
+      const stratificationWorksheet = workbook.addWorksheet(
+        `${index} - ${stratName}`,
+      );
+      const testCaseExcelExportDto = testCaseExcelExportDtos.find(
+        (dto) => dto.groupId === groupId,
+      );
+      this.generateStratificationWorksheet(
+        stratificationWorksheet,
+        stratName,
+        testCaseExcelExportDto,
+      );
+      index++;
+    }
 
     // Return final workbook
     return workbook.xlsx.writeBuffer() as Promise<Buffer>;
@@ -350,8 +363,8 @@ export class ExportService {
 
   public generateStratificationWorksheet(
     worksheet: ExcelJS.Worksheet,
+    stratName: string,
     testCaseGroupDto: TestCaseExcelExportDto,
-    groupedStratificationDto: GroupedStratificationDto,
   ) {
     let firstRow = [];
     let headerRow = [];
@@ -366,6 +379,15 @@ export class ExportService {
         const firstRowData = [];
         const headerRowData = [];
         const testCaseData = [];
+        const groupedStratificationDto = result.stratifications?.find(
+          (s) => s.stratName === stratName,
+        );
+        if (
+          undefined === groupedStratificationDto ||
+          null === groupedStratificationDto
+        ) {
+          return;
+        }
 
         const numValues: number =
           groupedStratificationDto.stratificationDtos?.length;
