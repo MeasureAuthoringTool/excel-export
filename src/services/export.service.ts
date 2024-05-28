@@ -179,8 +179,8 @@ export class ExportService {
     let headerRow = [];
     const testCasesData = [];
     //failed test cases will have red text font
-    const failedIndexes = [];
-    let index: number = 3;
+    const failedRows = [];
+    let rowNumber: number = 3;
     testCaseGroupDto.testCaseExecutionResults.forEach(
       (result: TestCaseExecutionResultDto) => {
         const firstRowData = [];
@@ -198,10 +198,9 @@ export class ExportService {
             testCaseData,
             population,
             result,
-            index,
-            failedIndexes,
+            rowNumber,
+            failedRows,
           );
-          index += 1;
         });
         populations?.forEach((population) => {
           headerRowData.push(population.name);
@@ -212,7 +211,7 @@ export class ExportService {
         testCasesData.push(testCaseData);
         firstRow = firstRowData;
         headerRow = headerRowData;
-        index += 1;
+        rowNumber += 1;
       },
     );
     this.populateFirstRow(worksheet, firstRow);
@@ -226,7 +225,7 @@ export class ExportService {
     testCasesData.forEach((testCaseData) => {
       worksheet.addRow(testCaseData);
     });
-    failedIndexes.forEach((index) => {
+    failedRows.forEach((index) => {
       worksheet.getRow(index).font = { color: { argb: 'ff0000' } };
     });
     this.adjustColumnWidth(worksheet);
@@ -236,8 +235,8 @@ export class ExportService {
     testCaseData,
     populationDto: PopulationDto,
     result,
-    index: number,
-    failedIndexes: number[],
+    rowNumber: number,
+    failedRows: number[],
   ) {
     let foundPopulation: PopulationDto = null;
     result.populations?.forEach((currentPopulation) => {
@@ -246,9 +245,9 @@ export class ExportService {
       }
     });
     if (foundPopulation?.expected !== foundPopulation?.actual) {
-      if (failedIndexes.indexOf(index) === -1) {
+      if (failedRows.indexOf(rowNumber) === -1) {
         //if not in the array
-        failedIndexes.push(index);
+        failedRows.push(rowNumber);
       }
     }
     testCaseData.push(foundPopulation?.expected);
