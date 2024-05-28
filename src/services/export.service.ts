@@ -395,7 +395,6 @@ export class ExportService {
         groupedStratificationDto.stratificationDtos?.forEach((strat) => {
           headerRowData.push(strat.name);
           this.populateStratExpected(testCaseData, strat, index, failedIndexes);
-          index += 1;
         });
 
         groupedStratificationDto.stratificationDtos?.forEach((strat) => {
@@ -403,6 +402,7 @@ export class ExportService {
           this.populateStratActual(testCaseData, strat);
         });
 
+        index += 1;
         this.populateTestCase(testCaseData, result);
         testCasesData.push(testCaseData);
         firstRow = firstRowData;
