@@ -30,6 +30,7 @@
     "@okta/jwt-verifier": "^3.1.0",
     "cqm-models": "4.1.3",
     "exceljs": "^4.4.0",
+    "export-excel": "file:",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.2.0",
     "reflect-metadata": "^0.2.0",
