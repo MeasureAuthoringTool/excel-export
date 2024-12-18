@@ -215,7 +215,7 @@ describe('ExcelService', () => {
     expect(worksheet.getCell(2, 8).value).toBe('deathdate');
     expect(worksheet.getCell(2, 9).value).toBe('ethnicity');
     expect(worksheet.getCell(2, 10).value).toBe('race');
-    expect(worksheet.getCell(2, 11).value).toBe('gender');
+    expect(worksheet.getCell(2, 11).value).toBe('sex');
     expect(worksheet.getCell(2, 12).value).toBe(
       'define "Denominator":\n  "Initial Population"',
     );
