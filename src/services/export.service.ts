@@ -23,7 +23,6 @@ export class ExportService {
     testCaseExcelExportDtos: TestCaseExcelExportDto[],
   ): Promise<Buffer> {
     const workbook = new ExcelJS.Workbook();
-
     //Generate Key worksheet
     const keyWorkSheet = workbook.addWorksheet('KEY');
     this.generateKeyWorksheet(keyWorkSheet);
@@ -296,7 +295,7 @@ export class ExportService {
       'deathdate',
       'ethnicity',
       'race',
-      'gender',
+      'sex',
     );
     if (result.definitions && result.definitions.length > 0) {
       result.definitions.forEach((definition) => {
