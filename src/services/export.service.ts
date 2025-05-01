@@ -15,6 +15,7 @@ import {
   TestCaseExcelExportDto,
   PopulationDto,
   StratificationDto,
+  OverlappingCodeDto,
 } from '@madie/madie-models';
 
 @Injectable()
@@ -452,5 +453,90 @@ export class ExportService {
       firstRowData.push(' ');
     }
     firstRowData.push('Actual');
+  }
+
+  async generateOverlappingCodeXlsx(
+    overlappingCodeDtos: OverlappingCodeDto[],
+  ): Promise<Buffer> {
+    const workbook = new ExcelJS.Workbook();
+    const overlappingCodesWorkSheet =
+      workbook.addWorksheet('Overlapping Codes');
+    overlappingCodesWorkSheet.addRow([
+      'Code',
+      'Code System',
+      'Description',
+      'Version',
+      'Value Set',
+      'Value Set OID/URL',
+    ]);
+
+    const newCodes = this.getExpandedList(overlappingCodeDtos);
+    newCodes.forEach((code) => {
+      overlappingCodesWorkSheet.addRow([
+        code.code,
+        code.codeSystem,
+        code.description,
+        code.codeSystemVersion,
+        code.valueSets[0]?.name,
+        code.valueSets[0]?.oid,
+      ]);
+    });
+
+    this.formatWorkSheet(overlappingCodesWorkSheet);
+
+    // Return final workbook
+    return workbook.xlsx.writeBuffer() as Promise<Buffer>;
+  }
+
+  getExpandedList(
+    overlappingCodes: OverlappingCodeDto[],
+  ): OverlappingCodeDto[] {
+    const newOverlappingCodes: OverlappingCodeDto[] = [];
+    overlappingCodes.forEach((overlappingCode) => {
+      const valueSets = overlappingCode.valueSets;
+      if (valueSets?.length > 0) {
+        valueSets.forEach((valueSet) => {
+          const newOverlappingCode = {
+            ...overlappingCode,
+            valueSets: [valueSet],
+          };
+          newOverlappingCodes.push(newOverlappingCode);
+        });
+      } else {
+        newOverlappingCodes.push(overlappingCode);
+      }
+    });
+    return newOverlappingCodes;
+  }
+
+  private formatWorkSheet(overlappingCodesWorkSheet: ExcelJS.Worksheet) {
+    const row = overlappingCodesWorkSheet.getRow(1);
+    row.eachCell((cell) => {
+      cell.font = {
+        ...defaultKeySheetFontStyle,
+        bold: true,
+        color: { argb: 'FFFFFF' },
+      };
+      cell.alignment = defaultKeySheetAlignmentStyle;
+      cell.border = {
+        bottom: defaultKeySheetBorderStyle,
+        right: defaultKeySheetBorderStyle,
+      };
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: '34BABF' },
+      };
+    });
+    overlappingCodesWorkSheet.columns.forEach(function (column) {
+      let maxLength = 0;
+      column['eachCell']({ includeEmpty: true }, function (cell) {
+        const columnLength = cell.value ? cell.value.toString().length + 1 : 10;
+        if (columnLength > maxLength) {
+          maxLength = columnLength;
+        }
+      });
+      column.width = maxLength < 10 ? 10 : maxLength;
+    });
   }
 }

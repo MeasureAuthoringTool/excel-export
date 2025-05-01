@@ -1,7 +1,10 @@
 import { ExportService } from './export.service';
 import * as ExcelJS from 'exceljs';
 import { keySheetDescription } from './static/KeySheetData';
-import { TestCaseExcelExportDto } from '@madie/madie-models';
+import {
+  TestCaseExcelExportDto,
+  OverlappingCodeDto,
+} from '@madie/madie-models';
 
 describe('ExcelService', () => {
   let excelExportService: ExportService;
@@ -120,6 +123,29 @@ describe('ExcelService', () => {
       },
     ],
   };
+
+  const overlappingCodeDtos: OverlappingCodeDto[] = [
+    {
+      code: '4525004',
+      description: 'Emergency department patient visit (procedure)',
+      codeSystem: 'http://snomed.info/sct',
+      codeSystemVersion: 'http://snomed.info/sct/731000124108/version/20250301',
+      codeSystemName: 'http://snomed.info/sct',
+      valueSets: [
+        {
+          name: 'EmergencyDepartmentEvaluationAndManagementVisit',
+          oid: '2.16.840.1.113883.3.464.1003.101.12.1010',
+          url: 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.101.12.1010',
+        },
+        {
+          name: 'EmergencyDepartmentVisit',
+          oid: '2.16.840.1.113883.3.117.1.7.1.292',
+          url: 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.117.1.7.1.292',
+        },
+      ],
+    },
+  ];
+
   beforeEach(() => {
     excelExportService = new ExportService();
   });
@@ -300,5 +326,73 @@ describe('ExcelService', () => {
     expect(strat1WorkSheet.getCell(3, 6).value).toBe(0);
     expect(strat1WorkSheet.getCell(3, 7).value).toBe(0);
     expect(strat1WorkSheet.getCell(3, 8).value).toBe(0);
+  });
+
+  it('test generateOverlappingCodeXlsx', async () => {
+    const buffer =
+      await excelExportService.generateOverlappingCodeXlsx(overlappingCodeDtos);
+    expect(buffer).not.toBe(null);
+
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(buffer);
+
+    const overlappingCodesWorkSheet =
+      workbook.getWorksheet('Overlapping Codes');
+    expect(overlappingCodesWorkSheet).not.toBe(null);
+    expect(overlappingCodesWorkSheet.getRows.length).toBe(2);
+    expect(overlappingCodesWorkSheet.getCell(1, 1).value).toBe('Code');
+    expect(overlappingCodesWorkSheet.getCell(1, 2).value).toBe('Code System');
+    expect(overlappingCodesWorkSheet.getCell(1, 3).value).toBe('Description');
+    expect(overlappingCodesWorkSheet.getCell(1, 4).value).toBe('Version');
+    expect(overlappingCodesWorkSheet.getCell(1, 5).value).toBe('Value Set');
+    expect(overlappingCodesWorkSheet.getCell(1, 6).value).toBe(
+      'Value Set OID/URL',
+    );
+
+    expect(overlappingCodesWorkSheet.getCell(2, 1).value).toBe('4525004');
+    expect(overlappingCodesWorkSheet.getCell(2, 2).value).toBe(
+      'http://snomed.info/sct',
+    );
+    expect(overlappingCodesWorkSheet.getCell(2, 3).value).toBe(
+      'Emergency department patient visit (procedure)',
+    );
+    expect(overlappingCodesWorkSheet.getCell(2, 4).value).toBe(
+      'http://snomed.info/sct/731000124108/version/20250301',
+    );
+    expect(overlappingCodesWorkSheet.getCell(2, 5).value).toBe(
+      'EmergencyDepartmentEvaluationAndManagementVisit',
+    );
+    expect(overlappingCodesWorkSheet.getCell(2, 6).value).toBe(
+      '2.16.840.1.113883.3.464.1003.101.12.1010',
+    );
+
+    expect(overlappingCodesWorkSheet.getCell(3, 1).value).toBe('4525004');
+    expect(overlappingCodesWorkSheet.getCell(3, 2).value).toBe(
+      'http://snomed.info/sct',
+    );
+    expect(overlappingCodesWorkSheet.getCell(3, 3).value).toBe(
+      'Emergency department patient visit (procedure)',
+    );
+    expect(overlappingCodesWorkSheet.getCell(3, 4).value).toBe(
+      'http://snomed.info/sct/731000124108/version/20250301',
+    );
+    expect(overlappingCodesWorkSheet.getCell(3, 5).value).toBe(
+      'EmergencyDepartmentVisit',
+    );
+    expect(overlappingCodesWorkSheet.getCell(3, 6).value).toBe(
+      '2.16.840.1.113883.3.117.1.7.1.292',
+    );
+  });
+
+  it('test getExpandedList', async () => {
+    const newDtos = excelExportService.getExpandedList(overlappingCodeDtos);
+    expect(newDtos.length).toBe(2);
+
+    const newOverlappingCodeDto = newDtos[0];
+    newOverlappingCodeDto.valueSets = null;
+    const newDtos2 = excelExportService.getExpandedList([
+      newOverlappingCodeDto,
+    ]);
+    expect(newDtos2.length).toBe(1);
   });
 });
