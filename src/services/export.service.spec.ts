@@ -362,9 +362,7 @@ describe('ExcelService', () => {
     expect(overlappingCodesWorkSheet.getCell(2, 5).value).toBe(
       'EmergencyDepartmentEvaluationAndManagementVisit',
     );
-    expect(overlappingCodesWorkSheet.getCell(2, 6).value).toBe(
-      '',
-    );
+    expect(overlappingCodesWorkSheet.getCell(2, 6).value).toBe('');
 
     expect(overlappingCodesWorkSheet.getCell(3, 1).value).toBe('4525004');
     expect(overlappingCodesWorkSheet.getCell(3, 2).value).toBe(
