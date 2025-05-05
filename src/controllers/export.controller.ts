@@ -27,7 +27,7 @@ export class ExportController {
     res.send(buffer);
   }
 
-  @Put('/exportOverlappingValueSets')
+  @Put('/overlapping-codes')
   @Header(
     'Content-Type',
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
