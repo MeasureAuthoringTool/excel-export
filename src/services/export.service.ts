@@ -478,7 +478,9 @@ export class ExportService {
         code.description,
         code.codeSystemVersion,
         code.valueSets[0]?.name,
-        code.valueSets[0]?.oid,
+        code.valueSets[0]?.url
+          ? code.valueSets[0]?.url
+          : code.valueSets[0]?.oid,
       ]);
     });
 
