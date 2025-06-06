@@ -140,7 +140,7 @@ describe('ExcelService', () => {
         {
           name: 'EmergencyDepartmentVisit',
           oid: '2.16.840.1.113883.3.117.1.7.1.292',
-          url: 'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.117.1.7.1.292',
+          url: '',
         },
       ],
     },
@@ -362,7 +362,9 @@ describe('ExcelService', () => {
     expect(overlappingCodesWorkSheet.getCell(2, 5).value).toBe(
       'EmergencyDepartmentEvaluationAndManagementVisit',
     );
-    expect(overlappingCodesWorkSheet.getCell(2, 6).value).toBe('');
+    expect(overlappingCodesWorkSheet.getCell(2, 6).value).toBe(
+      'http://cts.nlm.nih.gov/fhir/ValueSet/2.16.840.1.113883.3.464.1003.101.12.1010',
+    );
 
     expect(overlappingCodesWorkSheet.getCell(3, 1).value).toBe('4525004');
     expect(overlappingCodesWorkSheet.getCell(3, 2).value).toBe(
