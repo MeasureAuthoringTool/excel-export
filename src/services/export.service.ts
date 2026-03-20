@@ -17,6 +17,7 @@ import {
   StratificationDto,
   OverlappingCodeDto,
 } from '@madie/madie-models';
+import { MeasureAccessReportDTO } from '../dto/MeasureAccessReportDTO';
 
 @Injectable()
 export class ExportService {
@@ -490,6 +491,48 @@ export class ExportService {
     return workbook.xlsx.writeBuffer() as Promise<Buffer>;
   }
 
+  async generateSharedAccessReportForMeasures(
+    accessReportDTOS: Array<MeasureAccessReportDTO>,
+  ): Promise<Buffer> {
+    const workbook = new ExcelJS.Workbook();
+    const accessReportWorkSheet = workbook.addWorksheet(
+      'Measure Sharing Report',
+    );
+    accessReportWorkSheet.addRow([
+      'Measure Name',
+      'Model',
+      'CMS ID',
+      'Current Measure Owner',
+      'Shared With',
+      'Date Shared',
+    ]);
+
+    accessReportDTOS?.forEach((report) => {
+      const sharedWith = report.sharedWith ?? [];
+      if (sharedWith.length === 0) {
+        // No shared users: emit a row with only measure-level columns
+        accessReportWorkSheet.addRow(this.buildAccessReportRow(report, '', ''));
+      } else {
+        sharedWith.forEach((shared, index) => {
+          // Only populate measure-level columns (A–D) on the first row per measure
+          const measureInfo = index === 0 ? report : null;
+          accessReportWorkSheet.addRow(
+            this.buildAccessReportRow(
+              measureInfo,
+              shared.userId,
+              shared.dateShared,
+            ),
+          );
+        });
+      }
+    });
+
+    this.formatWorkSheet(accessReportWorkSheet);
+
+    // Return final workbook
+    return workbook.xlsx.writeBuffer() as Promise<Buffer>;
+  }
+
   getExpandedList(
     overlappingCodes: OverlappingCodeDto[],
   ): OverlappingCodeDto[] {
@@ -540,5 +583,20 @@ export class ExportService {
       });
       column.width = maxLength < 10 ? 10 : maxLength;
     });
+  }
+
+  private buildAccessReportRow(
+    report: MeasureAccessReportDTO | null,
+    userId: string,
+    dateShared: string,
+  ): string[] {
+    return [
+      report?.measureName ?? '',
+      report?.measureModel ?? '',
+      report?.cmsId ?? '',
+      report?.owner ?? '',
+      userId,
+      dateShared,
+    ];
   }
 }

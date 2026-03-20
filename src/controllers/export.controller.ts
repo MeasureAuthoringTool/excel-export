@@ -1,4 +1,12 @@
-import { Controller, UseGuards, Res, Header, Req, Put } from '@nestjs/common';
+import {
+  Controller,
+  UseGuards,
+  Res,
+  Header,
+  Req,
+  Put,
+  BadRequestException,
+} from '@nestjs/common';
 import { Response, Request } from 'express';
 import { ExportService } from '../services/export.service';
 import { AuthGuard } from '../auth/auth.guard';
@@ -7,6 +15,7 @@ import {
   OverlappingCodeDto,
 } from '@madie/madie-models';
 import { log } from 'console';
+import { MeasureAccessReportDTO } from '../dto/MeasureAccessReportDTO';
 
 @Controller('excel')
 @UseGuards(AuthGuard)
@@ -41,6 +50,36 @@ export class ExportController {
     log('request -> ' + JSON.stringify(overlappingCodeDtos));
     const buffer =
       await this.exportService.generateOverlappingCodeXlsx(overlappingCodeDtos);
+    res.send(buffer);
+  }
+
+  @Put('/measure-shared-access-report')
+  @Header(
+    'Content-Type',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  )
+  @Header('Content-Disposition', 'attachment; filename="overlappingCodes.xlsx"')
+  async getSharedAccessReportForMeasures(
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
+    const accessReportDTOS: MeasureAccessReportDTO[] = req.body;
+    if (
+      !accessReportDTOS ||
+      !Array.isArray(accessReportDTOS) ||
+      accessReportDTOS.length === 0
+    ) {
+      throw new BadRequestException(
+        'No measures found to generate the measure shared access report.',
+      );
+    }
+    const ids = accessReportDTOS.map((report) => report.id).join(', ');
+    log('Generating the access report for measures', ids);
+    const buffer =
+      await this.exportService.generateSharedAccessReportForMeasures(
+        accessReportDTOS,
+      );
+    log('Access report generated successfully for measures', ids);
     res.send(buffer);
   }
 }

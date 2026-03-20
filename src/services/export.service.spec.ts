@@ -5,6 +5,7 @@ import {
   TestCaseExcelExportDto,
   OverlappingCodeDto,
 } from '@madie/madie-models';
+import { MeasureAccessReportDTO } from '../dto/MeasureAccessReportDTO';
 
 describe('ExcelService', () => {
   let excelExportService: ExportService;
@@ -394,5 +395,143 @@ describe('ExcelService', () => {
       newOverlappingCodeDto,
     ]);
     expect(newDtos2.length).toBe(1);
+  });
+
+  describe('generateSharedAccessReportForMeasures', () => {
+    const singleSharedMeasure: MeasureAccessReportDTO = {
+      id: 'measure-id-1',
+      measureName: 'Test Measure',
+      measureModel: 'QI-Core v4.1.1',
+      cmsId: 'CMS001',
+      owner: 'owner@example.com',
+      sharedWith: [
+        { userId: 'user1@example.com', dateShared: '2026-01-15' },
+        { userId: 'user2@example.com', dateShared: '2026-02-20' },
+      ],
+    };
+
+    const noSharesMeasure: MeasureAccessReportDTO = {
+      id: 'measure-id-2',
+      measureName: 'Unshared Measure',
+      measureModel: 'QDM v5.6',
+      cmsId: 'CMS002',
+      owner: 'owner2@example.com',
+      sharedWith: [],
+    };
+
+    const nullSharedWithMeasure: MeasureAccessReportDTO = {
+      id: 'measure-id-3',
+      measureName: 'Null Shared Measure',
+      measureModel: 'QI-Core v4.1.1',
+      cmsId: 'CMS003',
+      owner: 'owner3@example.com',
+      sharedWith: null,
+    };
+
+    it('should write the correct header row', async () => {
+      const buffer =
+        await excelExportService.generateSharedAccessReportForMeasures([
+          singleSharedMeasure,
+        ]);
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(buffer);
+      const ws = workbook.getWorksheet('Measure Sharing Report');
+
+      expect(ws.getCell(1, 1).value).toBe('Measure Name');
+      expect(ws.getCell(1, 2).value).toBe('Model');
+      expect(ws.getCell(1, 3).value).toBe('CMS ID');
+      expect(ws.getCell(1, 4).value).toBe('Current Measure Owner');
+      expect(ws.getCell(1, 5).value).toBe('Shared With');
+      expect(ws.getCell(1, 6).value).toBe('Date Shared');
+    });
+
+    it('should emit one row per shared user, populating measure columns only on the first row', async () => {
+      const buffer =
+        await excelExportService.generateSharedAccessReportForMeasures([
+          singleSharedMeasure,
+        ]);
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(buffer);
+      const ws = workbook.getWorksheet('Measure Sharing Report');
+
+      // First shared-user row (row 2): measure columns should be populated
+      expect(ws.getCell(2, 1).value).toBe('Test Measure');
+      expect(ws.getCell(2, 2).value).toBe('QI-Core v4.1.1');
+      expect(ws.getCell(2, 3).value).toBe('CMS001');
+      expect(ws.getCell(2, 4).value).toBe('owner@example.com');
+      expect(ws.getCell(2, 5).value).toBe('user1@example.com');
+      expect(ws.getCell(2, 6).value).toBe('2026-01-15');
+
+      // Second shared-user row (row 3): measure columns should be blank
+      expect(ws.getCell(3, 1).value).toBe('');
+      expect(ws.getCell(3, 2).value).toBe('');
+      expect(ws.getCell(3, 3).value).toBe('');
+      expect(ws.getCell(3, 4).value).toBe('');
+      expect(ws.getCell(3, 5).value).toBe('user2@example.com');
+      expect(ws.getCell(3, 6).value).toBe('2026-02-20');
+    });
+
+    it('should emit a single row with empty userId and dateShared when sharedWith is empty', async () => {
+      const buffer =
+        await excelExportService.generateSharedAccessReportForMeasures([
+          noSharesMeasure,
+        ]);
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(buffer);
+      const ws = workbook.getWorksheet('Measure Sharing Report');
+
+      expect(ws.getCell(2, 1).value).toBe('Unshared Measure');
+      expect(ws.getCell(2, 2).value).toBe('QDM v5.6');
+      expect(ws.getCell(2, 3).value).toBe('CMS002');
+      expect(ws.getCell(2, 4).value).toBe('owner2@example.com');
+      expect(ws.getCell(2, 5).value).toBe('');
+      expect(ws.getCell(2, 6).value).toBe('');
+
+      // No third row should exist
+      expect(ws.getRow(3).getCell(1).value).toBeNull();
+    });
+
+    it('should treat null sharedWith the same as an empty array', async () => {
+      const buffer =
+        await excelExportService.generateSharedAccessReportForMeasures([
+          nullSharedWithMeasure,
+        ]);
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(buffer);
+      const ws = workbook.getWorksheet('Measure Sharing Report');
+
+      expect(ws.getCell(2, 1).value).toBe('Null Shared Measure');
+      expect(ws.getCell(2, 5).value).toBe('');
+      expect(ws.getCell(2, 6).value).toBe('');
+    });
+
+    it('should handle multiple measures in a single report', async () => {
+      const anotherMeasure: MeasureAccessReportDTO = {
+        id: 'measure-id-4',
+        measureName: 'Second Measure',
+        measureModel: 'QDM v5.6',
+        cmsId: 'CMS004',
+        owner: 'owner4@example.com',
+        sharedWith: [{ userId: 'user3@example.com', dateShared: '2026-03-01' }],
+      };
+
+      const buffer =
+        await excelExportService.generateSharedAccessReportForMeasures([
+          singleSharedMeasure,
+          anotherMeasure,
+        ]);
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(buffer);
+      const ws = workbook.getWorksheet('Measure Sharing Report');
+
+      // singleSharedMeasure has 2 shared users → rows 2 & 3
+      expect(ws.getCell(2, 1).value).toBe('Test Measure');
+      expect(ws.getCell(3, 1).value).toBe('');
+
+      // anotherMeasure has 1 shared user → row 4
+      expect(ws.getCell(4, 1).value).toBe('Second Measure');
+      expect(ws.getCell(4, 5).value).toBe('user3@example.com');
+      expect(ws.getCell(4, 6).value).toBe('2026-03-01');
+    });
   });
 });
