@@ -160,12 +160,16 @@ describe('exportController', () => {
       },
     ];
 
+    let res: Partial<Response>;
+    beforeEach(() => {
+      res = { send: jest.fn(), setHeader: jest.fn() };
+    });
+
     it('should send the buffer returned by the service as the response', async () => {
       const mockedBuffer = Buffer.from('mocked-report');
       jest
         .spyOn(exportService, 'generateSharedAccessReportForMeasures')
         .mockResolvedValueOnce(mockedBuffer);
-      const res: Partial<Response> = { send: jest.fn() };
       const request: Request = { body: accessReportDTOS } as Request;
 
       await exportController.getSharedAccessReportForMeasures(
@@ -174,10 +178,34 @@ describe('exportController', () => {
       );
 
       expect(res.send).toHaveBeenCalledWith(mockedBuffer);
+      expect(res.setHeader).toHaveBeenCalledWith(
+        'Content-Disposition',
+        expect.stringMatching(
+          /^attachment; filename="MeasureSharingExport_\d{14}\.xlsx"$/,
+        ),
+      );
+    });
+
+    it('should set Content-Disposition header with a timestamped filename', async () => {
+      jest
+        .spyOn(exportService, 'generateSharedAccessReportForMeasures')
+        .mockResolvedValueOnce(Buffer.from('mocked-report'));
+      const request: Request = { body: accessReportDTOS } as Request;
+
+      await exportController.getSharedAccessReportForMeasures(
+        request,
+        res as Response,
+      );
+
+      expect(res.setHeader).toHaveBeenCalledWith(
+        'Content-Disposition',
+        expect.stringMatching(
+          /^attachment; filename="MeasureSharingExport_\d{14}\.xlsx"$/,
+        ),
+      );
     });
 
     it('should throw BadRequestException when body is null', async () => {
-      const res: Partial<Response> = { send: jest.fn() };
       const request: Request = { body: null } as Request;
 
       await expect(
@@ -189,7 +217,6 @@ describe('exportController', () => {
     });
 
     it('should throw BadRequestException when body is undefined', async () => {
-      const res: Partial<Response> = { send: jest.fn() };
       const request: Request = { body: undefined } as Request;
 
       await expect(
@@ -201,10 +228,7 @@ describe('exportController', () => {
     });
 
     it('should throw BadRequestException when body is not an array', async () => {
-      const res: Partial<Response> = { send: jest.fn() };
-      const request: Request = {
-        body: { id: 'not-an-array' },
-      } as Request;
+      const request: Request = { body: { id: 'not-an-array' } } as Request;
 
       await expect(
         exportController.getSharedAccessReportForMeasures(
@@ -214,8 +238,7 @@ describe('exportController', () => {
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('should throw error when body is an empty array', async () => {
-      const res: Partial<Response> = { send: jest.fn() };
+    it('should throw BadRequestException with descriptive message when body is an empty array', async () => {
       const request: Request = { body: [] } as Request;
 
       await expect(

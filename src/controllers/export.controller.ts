@@ -6,6 +6,7 @@ import {
   Req,
   Put,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { Response, Request } from 'express';
 import { ExportService } from '../services/export.service';
@@ -14,12 +15,13 @@ import {
   TestCaseExcelExportDto,
   OverlappingCodeDto,
 } from '@madie/madie-models';
-import { log } from 'console';
 import { MeasureAccessReportDTO } from '../dto/MeasureAccessReportDTO';
 
 @Controller('excel')
 @UseGuards(AuthGuard)
 export class ExportController {
+  private readonly logger = new Logger(ExportController.name);
+
   constructor(private readonly exportService: ExportService) {}
 
   @Put()
@@ -31,7 +33,7 @@ export class ExportController {
   async getExcelFile(@Req() req: Request, @Res() res: Response) {
     const testCaseGroupDtos: TestCaseExcelExportDto[] =
       req.body.testCaseExcelExportDtos;
-    log('request -> ' + JSON.stringify(testCaseGroupDtos));
+    this.logger.log('request -> ' + JSON.stringify(testCaseGroupDtos));
     const buffer = await this.exportService.generateXlsx(testCaseGroupDtos);
     res.send(buffer);
   }
@@ -47,7 +49,7 @@ export class ExportController {
     @Res() res: Response,
   ) {
     const overlappingCodeDtos: OverlappingCodeDto[] = req.body;
-    log('request -> ' + JSON.stringify(overlappingCodeDtos));
+    this.logger.log('request -> ' + JSON.stringify(overlappingCodeDtos));
     const buffer =
       await this.exportService.generateOverlappingCodeXlsx(overlappingCodeDtos);
     res.send(buffer);
@@ -57,10 +59,6 @@ export class ExportController {
   @Header(
     'Content-Type',
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  )
-  @Header(
-    'Content-Disposition',
-    'attachment; filename="MeasureSharingExport.xlsx"',
   )
   async getSharedAccessReportForMeasures(
     @Req() req: Request,
@@ -77,12 +75,20 @@ export class ExportController {
       );
     }
     const ids = accessReportDTOS.map((report) => report.id).join(', ');
-    log('Generating the access report for measures', ids);
+    this.logger.log(`Generating the access report for measures: ${ids}`);
+    const timestamp = new Date()
+      .toISOString()
+      .replace(/[-:T]/g, '')
+      .slice(0, 14);
+    const filename = `MeasureSharingExport_${timestamp}.xlsx`;
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     const buffer =
       await this.exportService.generateSharedAccessReportForMeasures(
         accessReportDTOS,
       );
-    log('Access report generated successfully for measures', ids);
+    this.logger.log(
+      `Access report generated successfully for measures: ${ids}`,
+    );
     res.send(buffer);
   }
 }
