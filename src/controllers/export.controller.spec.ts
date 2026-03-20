@@ -144,10 +144,10 @@ describe('exportController', () => {
         measureName: 'Test Measure One',
         measureModel: 'QI-Core v4.1.1',
         cmsId: 'CMS001',
-        owner: 'owner@example.com',
+        owner: 'owner1',
         sharedWith: [
-          { userId: 'user1@example.com', dateShared: '2026-01-15' },
-          { userId: 'user2@example.com', dateShared: '2026-02-20' },
+          { userId: 'user1', dateShared: '2026-01-15' },
+          { userId: 'user2', dateShared: '2026-02-20' },
         ],
       },
       {
@@ -155,8 +155,8 @@ describe('exportController', () => {
         measureName: 'Test Measure Two',
         measureModel: 'QDM v5.6',
         cmsId: 'CMS002',
-        owner: 'owner2@example.com',
-        sharedWith: [{ userId: 'user3@example.com', dateShared: '2026-03-01' }],
+        owner: 'owner2',
+        sharedWith: [{ userId: 'user3', dateShared: '2026-03-01' }],
       },
     ];
 

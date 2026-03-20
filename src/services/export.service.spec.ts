@@ -403,10 +403,10 @@ describe('ExcelService', () => {
       measureName: 'Test Measure',
       measureModel: 'QI-Core v4.1.1',
       cmsId: 'CMS001',
-      owner: 'owner@example.com',
+      owner: 'owner1',
       sharedWith: [
-        { userId: 'user1@example.com', dateShared: '2026-01-15' },
-        { userId: 'user2@example.com', dateShared: '2026-02-20' },
+        { userId: 'user1', dateShared: '2026-01-15' },
+        { userId: 'user2', dateShared: '2026-02-20' },
       ],
     };
 
@@ -415,7 +415,7 @@ describe('ExcelService', () => {
       measureName: 'Unshared Measure',
       measureModel: 'QDM v5.6',
       cmsId: 'CMS002',
-      owner: 'owner2@example.com',
+      owner: 'owner2',
       sharedWith: [],
     };
 
@@ -424,7 +424,7 @@ describe('ExcelService', () => {
       measureName: 'Null Shared Measure',
       measureModel: 'QI-Core v4.1.1',
       cmsId: 'CMS003',
-      owner: 'owner3@example.com',
+      owner: 'owner3',
       sharedWith: null,
     };
 
@@ -458,8 +458,8 @@ describe('ExcelService', () => {
       expect(ws.getCell(2, 1).value).toBe('Test Measure');
       expect(ws.getCell(2, 2).value).toBe('QI-Core v4.1.1');
       expect(ws.getCell(2, 3).value).toBe('CMS001');
-      expect(ws.getCell(2, 4).value).toBe('owner@example.com');
-      expect(ws.getCell(2, 5).value).toBe('user1@example.com');
+      expect(ws.getCell(2, 4).value).toBe('owner1');
+      expect(ws.getCell(2, 5).value).toBe('user1');
       expect(ws.getCell(2, 6).value).toBe('2026-01-15');
 
       // Second shared-user row (row 3): measure columns should be blank
@@ -467,7 +467,7 @@ describe('ExcelService', () => {
       expect(ws.getCell(3, 2).value).toBe('');
       expect(ws.getCell(3, 3).value).toBe('');
       expect(ws.getCell(3, 4).value).toBe('');
-      expect(ws.getCell(3, 5).value).toBe('user2@example.com');
+      expect(ws.getCell(3, 5).value).toBe('user2');
       expect(ws.getCell(3, 6).value).toBe('2026-02-20');
     });
 
@@ -483,7 +483,7 @@ describe('ExcelService', () => {
       expect(ws.getCell(2, 1).value).toBe('Unshared Measure');
       expect(ws.getCell(2, 2).value).toBe('QDM v5.6');
       expect(ws.getCell(2, 3).value).toBe('CMS002');
-      expect(ws.getCell(2, 4).value).toBe('owner2@example.com');
+      expect(ws.getCell(2, 4).value).toBe('owner2');
       expect(ws.getCell(2, 5).value).toBe('');
       expect(ws.getCell(2, 6).value).toBe('');
 
@@ -511,8 +511,8 @@ describe('ExcelService', () => {
         measureName: 'Second Measure',
         measureModel: 'QDM v5.6',
         cmsId: 'CMS004',
-        owner: 'owner4@example.com',
-        sharedWith: [{ userId: 'user3@example.com', dateShared: '2026-03-01' }],
+        owner: 'owner4',
+        sharedWith: [{ userId: 'user3', dateShared: '2026-03-01' }],
       };
 
       const buffer =
@@ -530,7 +530,7 @@ describe('ExcelService', () => {
 
       // anotherMeasure has 1 shared user → row 4
       expect(ws.getCell(4, 1).value).toBe('Second Measure');
-      expect(ws.getCell(4, 5).value).toBe('user3@example.com');
+      expect(ws.getCell(4, 5).value).toBe('user3');
       expect(ws.getCell(4, 6).value).toBe('2026-03-01');
     });
   });
