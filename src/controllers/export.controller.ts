@@ -58,7 +58,10 @@ export class ExportController {
     'Content-Type',
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   )
-  @Header('Content-Disposition', 'attachment; filename="overlappingCodes.xlsx"')
+  @Header(
+    'Content-Disposition',
+    'attachment; filename="MeasureSharingExport.xlsx"',
+  )
   async getSharedAccessReportForMeasures(
     @Req() req: Request,
     @Res() res: Response,
