@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ExportController } from './export.controller';
 import { Response, Request } from 'express';
-
+import { BadRequestException } from '@nestjs/common';
 import { ExportService } from '../services/export.service';
 import { JwtService } from '@nestjs/jwt';
 import {} from 'node-mocks-http';
@@ -9,6 +9,7 @@ import {
   TestCaseExcelExportDto,
   OverlappingCodeDto,
 } from '@madie/madie-models';
+import { MeasureAccessReportDTO } from '../dto/MeasureAccessReportDTO';
 
 describe('exportController', () => {
   let exportController: ExportController;
@@ -133,6 +134,121 @@ describe('exportController', () => {
         res as Response,
       );
       expect(res.send).toHaveBeenCalledWith(mockedExcelBuffer);
+    });
+  });
+
+  describe('getSharedAccessReportForMeasures', () => {
+    const accessReportDTOS: MeasureAccessReportDTO[] = [
+      {
+        id: 'measure-id-1',
+        measureName: 'Test Measure One',
+        measureModel: 'QI-Core v4.1.1',
+        cmsId: 'CMS001',
+        owner: 'owner1',
+        sharedWith: [
+          { userId: 'user1', dateShared: '2026-01-15' },
+          { userId: 'user2', dateShared: '2026-02-20' },
+        ],
+      },
+      {
+        id: 'measure-id-2',
+        measureName: 'Test Measure Two',
+        measureModel: 'QDM v5.6',
+        cmsId: 'CMS002',
+        owner: 'owner2',
+        sharedWith: [{ userId: 'user3', dateShared: '2026-03-01' }],
+      },
+    ];
+
+    let res: Partial<Response>;
+    beforeEach(() => {
+      res = { send: jest.fn(), setHeader: jest.fn() };
+    });
+
+    it('should send the buffer returned by the service as the response', async () => {
+      const mockedBuffer = Buffer.from('mocked-report');
+      jest
+        .spyOn(exportService, 'generateSharedAccessReportForMeasures')
+        .mockResolvedValueOnce(mockedBuffer);
+      const request: Request = { body: accessReportDTOS } as Request;
+
+      await exportController.getSharedAccessReportForMeasures(
+        request,
+        res as Response,
+      );
+
+      expect(res.send).toHaveBeenCalledWith(mockedBuffer);
+      expect(res.setHeader).toHaveBeenCalledWith(
+        'Content-Disposition',
+        expect.stringMatching(
+          /^attachment; filename="MeasureSharingExport_\d{14}\.xlsx"$/,
+        ),
+      );
+    });
+
+    it('should set Content-Disposition header with a timestamped filename', async () => {
+      jest
+        .spyOn(exportService, 'generateSharedAccessReportForMeasures')
+        .mockResolvedValueOnce(Buffer.from('mocked-report'));
+      const request: Request = { body: accessReportDTOS } as Request;
+
+      await exportController.getSharedAccessReportForMeasures(
+        request,
+        res as Response,
+      );
+
+      expect(res.setHeader).toHaveBeenCalledWith(
+        'Content-Disposition',
+        expect.stringMatching(
+          /^attachment; filename="MeasureSharingExport_\d{14}\.xlsx"$/,
+        ),
+      );
+    });
+
+    it('should throw BadRequestException when body is null', async () => {
+      const request: Request = { body: null } as Request;
+
+      await expect(
+        exportController.getSharedAccessReportForMeasures(
+          request,
+          res as Response,
+        ),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should throw BadRequestException when body is undefined', async () => {
+      const request: Request = { body: undefined } as Request;
+
+      await expect(
+        exportController.getSharedAccessReportForMeasures(
+          request,
+          res as Response,
+        ),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should throw BadRequestException when body is not an array', async () => {
+      const request: Request = { body: { id: 'not-an-array' } } as Request;
+
+      await expect(
+        exportController.getSharedAccessReportForMeasures(
+          request,
+          res as Response,
+        ),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should throw BadRequestException with descriptive message when body is an empty array', async () => {
+      const request: Request = { body: [] } as Request;
+
+      await expect(
+        exportController.getSharedAccessReportForMeasures(
+          request,
+          res as Response,
+        ),
+      ).rejects.toThrow(
+        'No measures found to generate the measure shared access report.',
+      );
     });
   });
 });
