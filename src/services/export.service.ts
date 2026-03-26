@@ -18,7 +18,7 @@ import {
   OverlappingCodeDto,
 } from '@madie/madie-models';
 import { MeasureAccessReportDTO } from '../dto/MeasureAccessReportDTO';
-import { LibraryAccessReportDTO } from "../dto/LibraryAccessReportDTO";
+import { LibraryAccessReportDTO } from '../dto/LibraryAccessReportDTO';
 
 @Injectable()
 export class ExportService {
