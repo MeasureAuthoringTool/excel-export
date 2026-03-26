@@ -6,6 +6,7 @@ import {
   OverlappingCodeDto,
 } from '@madie/madie-models';
 import { MeasureAccessReportDTO } from '../dto/MeasureAccessReportDTO';
+import { LibraryAccessReportDTO } from '../dto/LibraryAccessReportDTO';
 
 describe('ExcelService', () => {
   let excelExportService: ExportService;
@@ -532,6 +533,165 @@ describe('ExcelService', () => {
       expect(ws.getCell(4, 1).value).toBe('Second Measure');
       expect(ws.getCell(4, 5).value).toBe('user3');
       expect(ws.getCell(4, 6).value).toBe('2026-03-01');
+    });
+  });
+
+  describe('generateSharedAccessReportForLibraries', () => {
+    const singleSharedLibrary: LibraryAccessReportDTO = {
+      id: 'library-id-1',
+      libraryName: 'Test Library',
+      libraryModel: 'QI-Core v4.1.1',
+      owner: 'owner1',
+      sharedWith: [
+        { userId: 'user1', dateShared: '2026-01-15' },
+        { userId: 'user2', dateShared: '2026-02-20' },
+      ],
+    };
+
+    const noSharesLibrary: LibraryAccessReportDTO = {
+      id: 'library-id-2',
+      libraryName: 'Unshared Library',
+      libraryModel: 'QDM v5.6',
+      owner: 'owner2',
+      sharedWith: [],
+    };
+
+    const nullSharedWithLibrary: LibraryAccessReportDTO = {
+      id: 'library-id-3',
+      libraryName: 'Null Shared Library',
+      libraryModel: 'QI-Core v4.1.1',
+      owner: 'owner3',
+      sharedWith: null,
+    };
+
+    it('should write the correct header row', async () => {
+      const buffer =
+        await excelExportService.generateSharedAccessReportForLibraries([
+          singleSharedLibrary,
+        ]);
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(buffer);
+      const ws = workbook.getWorksheet('Library Sharing Report');
+
+      expect(ws.getCell(1, 1).value).toBe('Library Name');
+      expect(ws.getCell(1, 2).value).toBe('Model');
+      expect(ws.getCell(1, 3).value).toBe('Current Library Owner');
+      expect(ws.getCell(1, 4).value).toBe('Shared With');
+      expect(ws.getCell(1, 5).value).toBe('Date Shared');
+    });
+
+    it('should emit one row per shared user, populating library columns only on the first row', async () => {
+      const buffer =
+        await excelExportService.generateSharedAccessReportForLibraries([
+          singleSharedLibrary,
+        ]);
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(buffer);
+      const ws = workbook.getWorksheet('Library Sharing Report');
+
+      // First shared-user row (row 2): library columns should be populated
+      expect(ws.getCell(2, 1).value).toBe('Test Library');
+      expect(ws.getCell(2, 2).value).toBe('QI-Core v4.1.1');
+      expect(ws.getCell(2, 3).value).toBe('owner1');
+      expect(ws.getCell(2, 4).value).toBe('user1');
+      expect(ws.getCell(2, 5).value).toBe('2026-01-15');
+
+      // Second shared-user row (row 3): library columns should be blank
+      expect(ws.getCell(3, 1).value).toBe('');
+      expect(ws.getCell(3, 2).value).toBe('');
+      expect(ws.getCell(3, 3).value).toBe('');
+      expect(ws.getCell(3, 4).value).toBe('user2');
+      expect(ws.getCell(3, 5).value).toBe('2026-02-20');
+    });
+
+    it('should emit a single row with empty userId and dateShared when sharedWith is empty', async () => {
+      const buffer =
+        await excelExportService.generateSharedAccessReportForLibraries([
+          noSharesLibrary,
+        ]);
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(buffer);
+      const ws = workbook.getWorksheet('Library Sharing Report');
+
+      expect(ws.getCell(2, 1).value).toBe('Unshared Library');
+      expect(ws.getCell(2, 2).value).toBe('QDM v5.6');
+      expect(ws.getCell(2, 3).value).toBe('owner2');
+      expect(ws.getCell(2, 4).value).toBe('');
+      expect(ws.getCell(2, 5).value).toBe('');
+
+      // No third row should exist
+      expect(ws.getRow(3).getCell(1).value).toBeNull();
+    });
+
+    it('should treat null sharedWith the same as an empty array', async () => {
+      const buffer =
+        await excelExportService.generateSharedAccessReportForLibraries([
+          nullSharedWithLibrary,
+        ]);
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(buffer);
+      const ws = workbook.getWorksheet('Library Sharing Report');
+
+      expect(ws.getCell(2, 1).value).toBe('Null Shared Library');
+      expect(ws.getCell(2, 4).value).toBe('');
+      expect(ws.getCell(2, 5).value).toBe('');
+    });
+
+    it('should handle multiple libraries in a single report', async () => {
+      const anotherLibrary: LibraryAccessReportDTO = {
+        id: 'library-id-4',
+        libraryName: 'Second Library',
+        libraryModel: 'QDM v5.6',
+        owner: 'owner4',
+        sharedWith: [{ userId: 'user3', dateShared: '2026-03-01' }],
+      };
+
+      const buffer =
+        await excelExportService.generateSharedAccessReportForLibraries([
+          singleSharedLibrary,
+          anotherLibrary,
+        ]);
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(buffer);
+      const ws = workbook.getWorksheet('Library Sharing Report');
+
+      // singleSharedLibrary has 2 shared users → rows 2 & 3
+      expect(ws.getCell(2, 1).value).toBe('Test Library');
+      expect(ws.getCell(3, 1).value).toBe('');
+
+      // anotherLibrary has 1 shared user → row 4
+      expect(ws.getCell(4, 1).value).toBe('Second Library');
+      expect(ws.getCell(4, 4).value).toBe('user3');
+      expect(ws.getCell(4, 5).value).toBe('2026-03-01');
+    });
+
+    it('should handle an empty array of libraries', async () => {
+      const buffer =
+        await excelExportService.generateSharedAccessReportForLibraries([]);
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(buffer);
+      const ws = workbook.getWorksheet('Library Sharing Report');
+
+      // Only header row should exist
+      expect(ws.getCell(1, 1).value).toBe('Library Name');
+      expect(ws.getRow(2).getCell(1).value).toBeNull();
+    });
+
+    it('should format the header row with correct styles', async () => {
+      const buffer =
+        await excelExportService.generateSharedAccessReportForLibraries([
+          singleSharedLibrary,
+        ]);
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(buffer);
+      const ws = workbook.getWorksheet('Library Sharing Report');
+      const headerRow = ws.getRow(1);
+
+      headerRow.eachCell((cell) => {
+        expect(cell.font.bold).toBe(true);
+        expect(cell.font.color.argb).toBe('FFFFFF');
+        expect((cell.fill as ExcelJS.FillPattern).fgColor.argb).toBe('34BABF');
+      });
     });
   });
 });

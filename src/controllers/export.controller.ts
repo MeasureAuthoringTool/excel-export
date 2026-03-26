@@ -16,6 +16,7 @@ import {
   OverlappingCodeDto,
 } from '@madie/madie-models';
 import { MeasureAccessReportDTO } from '../dto/MeasureAccessReportDTO';
+import { LibraryAccessReportDTO } from '../dto/LibraryAccessReportDTO';
 
 @Controller('excel')
 @UseGuards(AuthGuard)
@@ -88,6 +89,43 @@ export class ExportController {
       );
     this.logger.log(
       `Access report generated successfully for measures: ${ids}`,
+    );
+    res.send(buffer);
+  }
+
+  @Put('/library-shared-access-report')
+  @Header(
+    'Content-Type',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  )
+  async getSharedAccessReportForLibraries(
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
+    const accessReportDTOS: LibraryAccessReportDTO[] = req.body;
+    if (
+      !accessReportDTOS ||
+      !Array.isArray(accessReportDTOS) ||
+      accessReportDTOS.length === 0
+    ) {
+      throw new BadRequestException(
+        'No libraries found to generate the library shared access report.',
+      );
+    }
+    const ids = accessReportDTOS.map((report) => report.id).join(', ');
+    this.logger.log(`Generating the access report for libraries: ${ids}`);
+    const timestamp = new Date()
+      .toISOString()
+      .replace(/[-:T]/g, '')
+      .slice(0, 14);
+    const filename = `LibrarySharingExport_${timestamp}.xlsx`;
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    const buffer =
+      await this.exportService.generateSharedAccessReportForLibraries(
+        accessReportDTOS,
+      );
+    this.logger.log(
+      `Access report generated successfully for libraries: ${ids}`,
     );
     res.send(buffer);
   }

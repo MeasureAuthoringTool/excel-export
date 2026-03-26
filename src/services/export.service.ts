@@ -18,6 +18,7 @@ import {
   OverlappingCodeDto,
 } from '@madie/madie-models';
 import { MeasureAccessReportDTO } from '../dto/MeasureAccessReportDTO';
+import { LibraryAccessReportDTO } from "../dto/LibraryAccessReportDTO";
 
 @Injectable()
 export class ExportService {
@@ -533,6 +534,49 @@ export class ExportService {
     return workbook.xlsx.writeBuffer() as Promise<Buffer>;
   }
 
+  async generateSharedAccessReportForLibraries(
+    accessReportDTOS: Array<LibraryAccessReportDTO>,
+  ): Promise<Buffer> {
+    const workbook = new ExcelJS.Workbook();
+    const accessReportWorkSheet = workbook.addWorksheet(
+      'Library Sharing Report',
+    );
+    accessReportWorkSheet.addRow([
+      'Library Name',
+      'Model',
+      'Current Library Owner',
+      'Shared With',
+      'Date Shared',
+    ]);
+
+    accessReportDTOS?.forEach((report) => {
+      const sharedWith = report.sharedWith ?? [];
+      if (sharedWith.length === 0) {
+        // No shared users: emit a row with only library-level columns
+        accessReportWorkSheet.addRow(
+          this.buildLibraryAccessReportRow(report, '', ''),
+        );
+      } else {
+        sharedWith.forEach((shared, index) => {
+          // Only populate library-level columns (A–D) on the first row per library
+          const libraryInfo = index === 0 ? report : null;
+          accessReportWorkSheet.addRow(
+            this.buildLibraryAccessReportRow(
+              libraryInfo,
+              shared.userId,
+              shared.dateShared,
+            ),
+          );
+        });
+      }
+    });
+
+    this.formatWorkSheet(accessReportWorkSheet);
+
+    // Return final workbook
+    return workbook.xlsx.writeBuffer() as Promise<Buffer>;
+  }
+
   getExpandedList(
     overlappingCodes: OverlappingCodeDto[],
   ): OverlappingCodeDto[] {
@@ -594,6 +638,20 @@ export class ExportService {
       report?.measureName ?? '',
       report?.measureModel ?? '',
       report?.cmsId ?? '',
+      report?.owner ?? '',
+      userId,
+      dateShared,
+    ];
+  }
+
+  private buildLibraryAccessReportRow(
+    report: LibraryAccessReportDTO | null,
+    userId: string,
+    dateShared: string,
+  ): string[] {
+    return [
+      report?.libraryName ?? '',
+      report?.libraryModel ?? '',
       report?.owner ?? '',
       userId,
       dateShared,
