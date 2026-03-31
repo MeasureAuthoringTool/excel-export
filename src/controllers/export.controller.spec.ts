@@ -10,6 +10,7 @@ import {
   OverlappingCodeDto,
 } from '@madie/madie-models';
 import { MeasureAccessReportDTO } from '../dto/MeasureAccessReportDTO';
+import { LibraryAccessReportDTO } from '../dto/LibraryAccessReportDTO';
 
 describe('exportController', () => {
   let exportController: ExportController;
@@ -249,6 +250,182 @@ describe('exportController', () => {
       ).rejects.toThrow(
         'No measures found to generate the measure shared access report.',
       );
+    });
+  });
+
+  describe('getSharedAccessReportForLibraries', () => {
+    const accessReportDTOS: LibraryAccessReportDTO[] = [
+      {
+        id: 'library-id-1',
+        libraryName: 'Test Library One',
+        libraryModel: 'QI-Core v4.1.1',
+        owner: 'owner1',
+        sharedWith: [
+          { userId: 'user1', dateShared: '2026-01-15' },
+          { userId: 'user2', dateShared: '2026-02-20' },
+        ],
+      },
+      {
+        id: 'library-id-2',
+        libraryName: 'Test Library Two',
+        libraryModel: 'QDM v5.6',
+        owner: 'owner2',
+        sharedWith: [{ userId: 'user3', dateShared: '2026-03-01' }],
+      },
+    ];
+
+    let res: Partial<Response>;
+    beforeEach(() => {
+      res = { send: jest.fn(), setHeader: jest.fn() };
+    });
+
+    it('should send the buffer returned by the service as the response', async () => {
+      const mockedBuffer = Buffer.from('mocked-report');
+      jest
+        .spyOn(exportService, 'generateSharedAccessReportForLibraries')
+        .mockResolvedValueOnce(mockedBuffer);
+      const request: Request = { body: accessReportDTOS } as Request;
+
+      await exportController.getSharedAccessReportForLibraries(
+        request,
+        res as Response,
+      );
+
+      expect(res.send).toHaveBeenCalledWith(mockedBuffer);
+      expect(res.setHeader).toHaveBeenCalledWith(
+        'Content-Disposition',
+        expect.stringMatching(
+          /^attachment; filename="LibrarySharingExport_\d{14}\.xlsx"$/,
+        ),
+      );
+    });
+
+    it('should set Content-Disposition header with a timestamped filename', async () => {
+      jest
+        .spyOn(exportService, 'generateSharedAccessReportForLibraries')
+        .mockResolvedValueOnce(Buffer.from('mocked-report'));
+      const request: Request = { body: accessReportDTOS } as Request;
+
+      await exportController.getSharedAccessReportForLibraries(
+        request,
+        res as Response,
+      );
+
+      expect(res.setHeader).toHaveBeenCalledWith(
+        'Content-Disposition',
+        expect.stringMatching(
+          /^attachment; filename="LibrarySharingExport_\d{14}\.xlsx"$/,
+        ),
+      );
+    });
+
+    it('should throw BadRequestException when body is null', async () => {
+      const request: Request = { body: null } as Request;
+
+      await expect(
+        exportController.getSharedAccessReportForLibraries(
+          request,
+          res as Response,
+        ),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should throw BadRequestException when body is undefined', async () => {
+      const request: Request = { body: undefined } as Request;
+
+      await expect(
+        exportController.getSharedAccessReportForLibraries(
+          request,
+          res as Response,
+        ),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should throw BadRequestException when body is not an array', async () => {
+      const request: Request = { body: { id: 'not-an-array' } } as Request;
+
+      await expect(
+        exportController.getSharedAccessReportForLibraries(
+          request,
+          res as Response,
+        ),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should throw BadRequestException with descriptive message when body is an empty array', async () => {
+      const request: Request = { body: [] } as Request;
+
+      await expect(
+        exportController.getSharedAccessReportForLibraries(
+          request,
+          res as Response,
+        ),
+      ).rejects.toThrow(
+        'No libraries found to generate the library shared access report.',
+      );
+    });
+
+    it('should call generateSharedAccessReportForLibraries with the access report DTOs', async () => {
+      const mockedBuffer = Buffer.from('mocked-report');
+      const generateSpy = jest
+        .spyOn(exportService, 'generateSharedAccessReportForLibraries')
+        .mockResolvedValueOnce(mockedBuffer);
+      const request: Request = { body: accessReportDTOS } as Request;
+
+      await exportController.getSharedAccessReportForLibraries(
+        request,
+        res as Response,
+      );
+
+      expect(generateSpy).toHaveBeenCalledWith(accessReportDTOS);
+    });
+
+    it('should handle a single library in the request', async () => {
+      const singleLibraryDTO: LibraryAccessReportDTO[] = [
+        {
+          id: 'library-id-1',
+          libraryName: 'Single Library',
+          libraryModel: 'QI-Core v4.1.1',
+          owner: 'owner1',
+          sharedWith: [{ userId: 'user1', dateShared: '2026-01-15' }],
+        },
+      ];
+      const mockedBuffer = Buffer.from('mocked-report');
+      jest
+        .spyOn(exportService, 'generateSharedAccessReportForLibraries')
+        .mockResolvedValueOnce(mockedBuffer);
+      const request: Request = { body: singleLibraryDTO } as Request;
+
+      await exportController.getSharedAccessReportForLibraries(
+        request,
+        res as Response,
+      );
+
+      expect(res.send).toHaveBeenCalledWith(mockedBuffer);
+    });
+
+    it('should handle library with empty sharedWith array', async () => {
+      const libraryWithNoShares: LibraryAccessReportDTO[] = [
+        {
+          id: 'library-id-1',
+          libraryName: 'Library No Shares',
+          libraryModel: 'QI-Core v4.1.1',
+          owner: 'owner1',
+          sharedWith: [],
+        },
+      ];
+      const mockedBuffer = Buffer.from('mocked-report');
+      jest
+        .spyOn(exportService, 'generateSharedAccessReportForLibraries')
+        .mockResolvedValueOnce(mockedBuffer);
+      const request: Request = { body: libraryWithNoShares } as Request;
+
+      await exportController.getSharedAccessReportForLibraries(
+        request,
+        res as Response,
+      );
+
+      expect(res.send).toHaveBeenCalledWith(mockedBuffer);
     });
   });
 });
