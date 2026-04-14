@@ -74,7 +74,7 @@ export class ExportService {
     }
 
     // Return final workbook
-    return workbook.xlsx.writeBuffer() as Promise<Buffer>;
+    return Buffer.from(await workbook.xlsx.writeBuffer());
   }
 
   public generateKeyWorksheet(worksheet: ExcelJS.Worksheet) {
@@ -489,7 +489,7 @@ export class ExportService {
     this.formatWorkSheet(overlappingCodesWorkSheet);
 
     // Return final workbook
-    return workbook.xlsx.writeBuffer() as Promise<Buffer>;
+    return Buffer.from(await workbook.xlsx.writeBuffer());
   }
 
   async generateSharedAccessReportForMeasures(
@@ -531,7 +531,7 @@ export class ExportService {
     this.formatWorkSheet(accessReportWorkSheet);
 
     // Return final workbook
-    return workbook.xlsx.writeBuffer() as Promise<Buffer>;
+    return Buffer.from(await workbook.xlsx.writeBuffer());
   }
 
   async generateSharedAccessReportForLibraries(
@@ -574,7 +574,7 @@ export class ExportService {
     this.formatWorkSheet(accessReportWorkSheet);
 
     // Return final workbook
-    return workbook.xlsx.writeBuffer() as Promise<Buffer>;
+    return Buffer.from(await workbook.xlsx.writeBuffer());
   }
 
   getExpandedList(
