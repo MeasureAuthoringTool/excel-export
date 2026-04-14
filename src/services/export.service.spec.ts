@@ -8,6 +8,15 @@ import {
 import { MeasureAccessReportDTO } from '../dto/MeasureAccessReportDTO';
 import { LibraryAccessReportDTO } from '../dto/LibraryAccessReportDTO';
 
+// Node Buffer uses ArrayBuffer internally; copy it into a clean ArrayBuffer for ExcelJS's load()
+function toArrayBuffer(buf: Buffer): ArrayBuffer {
+  const ab = new ArrayBuffer(buf.byteLength);
+  new Uint8Array(ab).set(
+    new Uint8Array(buf.buffer, buf.byteOffset, buf.byteLength),
+  );
+  return ab;
+}
+
 describe('ExcelService', () => {
   let excelExportService: ExportService;
   const exportDto: TestCaseExcelExportDto = {
@@ -293,7 +302,7 @@ describe('ExcelService', () => {
     expect(buffer).not.toBe(null);
 
     const workbook = new ExcelJS.Workbook();
-    await workbook.xlsx.load(buffer as any);
+    await workbook.xlsx.load(toArrayBuffer(buffer));
 
     const keyWorkSheet = workbook.getWorksheet('KEY');
     expect(keyWorkSheet).not.toBe(null);
@@ -336,7 +345,7 @@ describe('ExcelService', () => {
     expect(buffer).not.toBe(null);
 
     const workbook = new ExcelJS.Workbook();
-    await workbook.xlsx.load(buffer as any);
+    await workbook.xlsx.load(toArrayBuffer(buffer));
 
     const overlappingCodesWorkSheet =
       workbook.getWorksheet('Overlapping Codes');
@@ -435,7 +444,7 @@ describe('ExcelService', () => {
           singleSharedMeasure,
         ]);
       const workbook = new ExcelJS.Workbook();
-      await workbook.xlsx.load(buffer as any);
+      await workbook.xlsx.load(toArrayBuffer(buffer));
       const ws = workbook.getWorksheet('Measure Sharing Report');
 
       expect(ws.getCell(1, 1).value).toBe('Measure Name');
@@ -452,7 +461,7 @@ describe('ExcelService', () => {
           singleSharedMeasure,
         ]);
       const workbook = new ExcelJS.Workbook();
-      await workbook.xlsx.load(buffer as any);
+      await workbook.xlsx.load(toArrayBuffer(buffer));
       const ws = workbook.getWorksheet('Measure Sharing Report');
 
       // First shared-user row (row 2): measure columns should be populated
@@ -478,7 +487,7 @@ describe('ExcelService', () => {
           noSharesMeasure,
         ]);
       const workbook = new ExcelJS.Workbook();
-      await workbook.xlsx.load(buffer as any);
+      await workbook.xlsx.load(toArrayBuffer(buffer));
       const ws = workbook.getWorksheet('Measure Sharing Report');
 
       expect(ws.getCell(2, 1).value).toBe('Unshared Measure');
@@ -498,7 +507,7 @@ describe('ExcelService', () => {
           nullSharedWithMeasure,
         ]);
       const workbook = new ExcelJS.Workbook();
-      await workbook.xlsx.load(buffer as any);
+      await workbook.xlsx.load(toArrayBuffer(buffer));
       const ws = workbook.getWorksheet('Measure Sharing Report');
 
       expect(ws.getCell(2, 1).value).toBe('Null Shared Measure');
@@ -522,7 +531,7 @@ describe('ExcelService', () => {
           anotherMeasure,
         ]);
       const workbook = new ExcelJS.Workbook();
-      await workbook.xlsx.load(buffer as any);
+      await workbook.xlsx.load(toArrayBuffer(buffer));
       const ws = workbook.getWorksheet('Measure Sharing Report');
 
       // singleSharedMeasure has 2 shared users → rows 2 & 3
@@ -570,7 +579,7 @@ describe('ExcelService', () => {
           singleSharedLibrary,
         ]);
       const workbook = new ExcelJS.Workbook();
-      await workbook.xlsx.load(buffer as any);
+      await workbook.xlsx.load(toArrayBuffer(buffer));
       const ws = workbook.getWorksheet('Library Sharing Report');
 
       expect(ws.getCell(1, 1).value).toBe('Library Name');
@@ -586,7 +595,7 @@ describe('ExcelService', () => {
           singleSharedLibrary,
         ]);
       const workbook = new ExcelJS.Workbook();
-      await workbook.xlsx.load(buffer as any);
+      await workbook.xlsx.load(toArrayBuffer(buffer));
       const ws = workbook.getWorksheet('Library Sharing Report');
 
       // First shared-user row (row 2): library columns should be populated
@@ -610,7 +619,7 @@ describe('ExcelService', () => {
           noSharesLibrary,
         ]);
       const workbook = new ExcelJS.Workbook();
-      await workbook.xlsx.load(buffer as any);
+      await workbook.xlsx.load(toArrayBuffer(buffer));
       const ws = workbook.getWorksheet('Library Sharing Report');
 
       expect(ws.getCell(2, 1).value).toBe('Unshared Library');
@@ -629,7 +638,7 @@ describe('ExcelService', () => {
           nullSharedWithLibrary,
         ]);
       const workbook = new ExcelJS.Workbook();
-      await workbook.xlsx.load(buffer as any);
+      await workbook.xlsx.load(toArrayBuffer(buffer));
       const ws = workbook.getWorksheet('Library Sharing Report');
 
       expect(ws.getCell(2, 1).value).toBe('Null Shared Library');
@@ -652,7 +661,7 @@ describe('ExcelService', () => {
           anotherLibrary,
         ]);
       const workbook = new ExcelJS.Workbook();
-      await workbook.xlsx.load(buffer as any);
+      await workbook.xlsx.load(toArrayBuffer(buffer));
       const ws = workbook.getWorksheet('Library Sharing Report');
 
       // singleSharedLibrary has 2 shared users → rows 2 & 3
@@ -669,7 +678,7 @@ describe('ExcelService', () => {
       const buffer =
         await excelExportService.generateSharedAccessReportForLibraries([]);
       const workbook = new ExcelJS.Workbook();
-      await workbook.xlsx.load(buffer as any);
+      await workbook.xlsx.load(toArrayBuffer(buffer));
       const ws = workbook.getWorksheet('Library Sharing Report');
 
       // Only header row should exist
@@ -683,7 +692,7 @@ describe('ExcelService', () => {
           singleSharedLibrary,
         ]);
       const workbook = new ExcelJS.Workbook();
-      await workbook.xlsx.load(buffer as any);
+      await workbook.xlsx.load(toArrayBuffer(buffer));
       const ws = workbook.getWorksheet('Library Sharing Report');
       const headerRow = ws.getRow(1);
 
