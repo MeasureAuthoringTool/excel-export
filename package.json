@@ -21,7 +21,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
-    "@madie/madie-models": "^1.4.36",
+    "@madie/madie-models": "^1.4.61",
     "@nestjs/common": "^11.1.19",
     "@nestjs/core": "^11.1.19",
     "@nestjs/jwt": "^11.0.2",
