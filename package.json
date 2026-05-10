@@ -28,7 +28,7 @@
     "@nestjs/platform-express": "^11.1.19",
     "@nestjs/terminus": "^11.1.1",
     "@okta/jwt-verifier": "^3.1.0",
-    "cqm-models": "^4.2.2",
+    "cqm-models": "^4.3.1",
     "dd-trace": "^4.0.0",
     "exceljs": "^4.4.0",
     "export-excel": "file:",
