@@ -33,7 +33,7 @@
     "exceljs": "^4.4.0",
     "export-excel": "file:",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.9.5",
+    "mongoose": "^8.23.0",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1"
   },
