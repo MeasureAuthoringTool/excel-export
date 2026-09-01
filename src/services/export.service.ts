@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import * as ExcelJS from 'exceljs';
+import * as ExcelJS from 'exceljs-hardened';
 import {
   keySheetColumnsData,
   keySheetDescription,

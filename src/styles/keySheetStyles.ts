@@ -1,4 +1,4 @@
-import * as ExcelJS from 'exceljs';
+import * as ExcelJS from 'exceljs-hardened';
 
 export const defaultKeySheetFontStyle = {
   color: { argb: '000000' },
