@@ -26,7 +26,7 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException('Token not present');
     }
     oktaJwtVerifier
-      .verifyAccessToken(token, `${process.env.CLIENT_ID}`)
+      .verifyAccessToken(token, `${process.env.AUDIENCE}`)
       .then((oktaToken) => {
         request['user'] = oktaToken.claims.sub;
       })
