@@ -1,5 +1,5 @@
 import { ExportService } from './export.service';
-import * as ExcelJS from 'exceljs';
+import * as ExcelJS from 'exceljs-hardened';
 import { keySheetDescription } from './static/KeySheetData';
 import {
   TestCaseExcelExportDto,
