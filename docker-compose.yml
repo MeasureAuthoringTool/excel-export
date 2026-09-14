@@ -9,7 +9,10 @@ services:
     environment:
       - PORT=3000
       - JWT_SECRET=${JWT_SECRET}
+      - OKTA_ISSUER=${OKTA_ISSUER}
+      - OKTA_AUDIENCE=${OKTA_AUDIENCE}
     ports:
       - '3000:3000'
     volumes:
       - /dist
+

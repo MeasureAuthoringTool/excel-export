@@ -17,7 +17,7 @@ export async function bootstrap() {
       'https://impl-madie.hcqis.org',
       'https://madie.cms.gov',
     ],
-    methods: ['GET', 'PUT'],
+    methods: ['GET', 'PUT', 'POST'],
   });
   await app.listen(3000);
 }
