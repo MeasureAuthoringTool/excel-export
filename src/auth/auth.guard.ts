@@ -14,9 +14,9 @@ import * as process from 'process';
 export class AuthGuard implements CanActivate {
   constructor(private jwtService: JwtService) {}
 
-  canActivate(context: ExecutionContext): boolean {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const oktaJwtVerifier = new OktaJwtVerifier({
-      issuer: process.env.ISSUER,
+      issuer: process.env.OKTA_ISSUER ?? process.env.ISSUER,
     });
 
     const request = context.switchToHttp().getRequest();
@@ -25,16 +25,18 @@ export class AuthGuard implements CanActivate {
     if (!token) {
       throw new UnauthorizedException('Token not present');
     }
-    oktaJwtVerifier
-      .verifyAccessToken(token, `${process.env.AUDIENCE}`)
-      .then((oktaToken) => {
-        request['user'] = oktaToken.claims.sub;
-      })
-      .catch((error) => {
-        console.debug('Error while verifying tokens', error);
-        throw new UnauthorizedException('Token not valid');
-      });
-    return true;
+
+    try {
+      const oktaToken = await oktaJwtVerifier.verifyAccessToken(
+        token,
+        `${process.env.OKTA_AUDIENCE ?? process.env.AUDIENCE}`,
+      );
+      request['user'] = oktaToken.claims.sub;
+      return true;
+    } catch (error) {
+      console.debug('Error while verifying tokens', error);
+      throw new UnauthorizedException('Token not valid');
+    }
   }
 
   private extractTokenFromHeader(request: Request): string | undefined {
