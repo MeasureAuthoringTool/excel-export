@@ -179,4 +179,31 @@ describe('UserExportService', () => {
       expect(width).toBeGreaterThanOrEqual(14);
     });
   });
+
+  it('renders a measure error in bold red in the Owned Measure Name column', async () => {
+    const buffer = await service.generateUserExportXlsx({
+      rows: [
+        {
+          userDisplayName: 'Broken User',
+          measureError: 'Unable to retrieve this user',
+        },
+      ],
+    });
+
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(toArrayBuffer(buffer));
+    const worksheet = workbook.getWorksheet(USER_EXPORT_SHEET_NAME);
+
+    const ownedMeasureNameCol =
+      USER_EXPORT_COLUMNS.findIndex((c) => c.field === 'ownedMeasureName') + 1;
+    const errorCell = worksheet.getRow(3).getCell(ownedMeasureNameCol);
+
+    expect(errorCell.value).toBe('Unable to retrieve this user');
+    const font = errorCell.font as ExcelJS.Font;
+    expect(font.color?.argb).toBe('FFFF0000');
+    expect(font.bold).toBe(true);
+
+    // User metadata is still written on the same row
+    expect(worksheet.getRow(3).getCell(1).value).toBe('Broken User');
+  });
 });

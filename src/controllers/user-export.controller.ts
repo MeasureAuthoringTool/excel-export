@@ -3,7 +3,7 @@ import {
   Controller,
   Header,
   Logger,
-  Post,
+  Put,
   Res,
   UseGuards,
   ValidationPipe,
@@ -21,7 +21,7 @@ export class UserExportController {
 
   constructor(private readonly userExportService: UserExportService) {}
 
-  @Post('/user-export')
+  @Put('/user-export')
   @Header(
     'Content-Type',
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',

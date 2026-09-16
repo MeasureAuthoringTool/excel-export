@@ -145,6 +145,10 @@ export class UserExportRowDto {
   @IsOptional()
   @IsString()
   sharedLibraryUpdated?: string;
+
+  @IsOptional()
+  @IsString()
+  measureError?: string;
 }
 
 /**

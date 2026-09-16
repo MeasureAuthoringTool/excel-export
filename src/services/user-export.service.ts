@@ -85,7 +85,9 @@ export class UserExportService {
 
   /**
    * Writes each element of `rows` starting at row 3, in the column field order.
-   * Works automatically when `rows` is empty (headers-only output).
+   * Works automatically when `rows` is empty (headers-only output). When a row
+   * carries a `measureError`, that message is rendered in red in the Owned
+   * Measure Name column instead of measure data.
    */
   private writeDataRows(
     worksheet: ExcelJS.Worksheet,
@@ -95,8 +97,29 @@ export class UserExportService {
       const values = USER_EXPORT_COLUMNS.map(
         (column) => row?.[column.field] ?? '',
       );
-      worksheet.addRow(values);
+      const addedRow = worksheet.addRow(values);
+      if (row?.measureError) {
+        this.writeMeasureError(addedRow, row.measureError);
+      }
     });
+  }
+
+  /**
+   * Renders a measure-fetch error for a user: the message is written into the
+   * Owned Measure Name column in bold red so an admin can see that the user's
+   * measure data could not be retrieved upstream.
+   */
+  private writeMeasureError(row: ExcelJS.Row, message: string): void {
+    const columnIndex =
+      USER_EXPORT_COLUMNS.findIndex((c) => c.field === 'ownedMeasureName') + 1;
+    const cell = row.getCell(columnIndex);
+    cell.value = message;
+    cell.font = {
+      name: 'Arial',
+      size: 11,
+      bold: true,
+      color: { argb: 'FFFF0000' },
+    };
   }
 
   /** Enables auto-filter across all 33 columns on row 2 and freezes rows 1–2. */
