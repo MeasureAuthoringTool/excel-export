@@ -174,7 +174,9 @@ describe('CodeSystemExportService', () => {
     const headerCell = worksheet.getRow(2).getCell(1);
     expect(headerCell.font).toMatchObject({ bold: true });
     const headerFill = headerCell.fill as ExcelJS.FillPattern;
-    expect(headerFill.fgColor?.argb).toBe(CODE_SYSTEM_EXPORT_COLUMN_HEADER_FILL);
+    expect(headerFill.fgColor?.argb).toBe(
+      CODE_SYSTEM_EXPORT_COLUMN_HEADER_FILL,
+    );
     expect(headerCell.border?.bottom?.style).toBe('thin');
 
     // Freeze: xSplit 0, ySplit 2
@@ -191,4 +193,3 @@ describe('CodeSystemExportService', () => {
     });
   });
 });
-

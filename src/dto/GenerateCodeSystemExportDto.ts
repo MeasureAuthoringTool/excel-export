@@ -66,4 +66,3 @@ export class GenerateCodeSystemExportDto {
   @Type(() => CodeSystemExportRowDto)
   rows: CodeSystemExportRowDto[];
 }
-

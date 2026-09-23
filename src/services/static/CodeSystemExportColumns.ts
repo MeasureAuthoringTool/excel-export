@@ -64,4 +64,3 @@ export const CODE_SYSTEM_EXPORT_SHEET_NAME = 'Code Systems';
 export const CODE_SYSTEM_EXPORT_DEFAULT_FILENAME = 'CodeSystemExport.xlsx';
 
 export const CODE_SYSTEM_EXPORT_COLUMN_HEADER_FILL = 'FF63a1e0';
-
