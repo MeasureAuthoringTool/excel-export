@@ -4,7 +4,11 @@ import { GenerateUserExportDto } from '../dto/GenerateUserExportDto';
 import {
   USER_EXPORT_COLUMN_HEADER_FILL,
   USER_EXPORT_COLUMNS,
+  USER_EXPORT_OWNED_LIBRARY_FILL,
+  USER_EXPORT_OWNED_MEASURE_FILL,
   USER_EXPORT_GROUPS,
+  USER_EXPORT_SHARED_MEASURE_FILL,
+  USER_EXPORT_SHARED_LIBRARY_FILL,
   USER_EXPORT_SHEET_NAME,
 } from './static/UserExportColumns';
 
@@ -139,6 +143,114 @@ describe('UserExportService', () => {
     const row4 = worksheet.getRow(4);
     expect(row4.getCell(1).value).toBe('User Two');
     expect(row4.getCell(9).value).toBe('2026-02-02'); // lastLogin (col 9)
+  });
+
+  it('applies fills only to populated data cells and a thick separator after each user group', async () => {
+    const buffer = await service.generateUserExportXlsx({
+      rows: [
+        {
+          userDisplayName: 'User One',
+          firstName: 'User',
+          lastName: 'One',
+          harpId: 'H1',
+          ownedMeasureName: 'Owned Measure A',
+          ownedMeasureVersion: '1.0',
+          ownedMeasureStatus: 'Draft',
+          ownedMeasureModel: 'QDM',
+          ownedMeasureCmsId: 'CMS-1',
+          ownedMeasureUpdated: '2026-01-01',
+          sharedMeasureName: 'Shared Measure A',
+          sharedMeasureVersion: '1.1',
+          sharedMeasureStatus: 'Active',
+          sharedMeasureModel: 'QDM',
+          sharedMeasureCmsId: 'CMS-2',
+          sharedMeasureOwner: 'Owner A',
+          sharedMeasureUpdated: '2026-01-02',
+          ownedLibraryName: 'Owned Library A',
+          ownedLibraryVersion: '2.0',
+          ownedLibraryStatus: 'Published',
+          ownedLibraryModel: 'QDM',
+          ownedLibraryUpdated: '2026-01-03',
+          sharedLibraryName: 'Shared Library A',
+          sharedLibraryVersion: '4.0',
+          sharedLibraryStatus: 'Active',
+          sharedLibraryModel: 'QDM',
+          sharedLibraryOwner: 'Owner B',
+          sharedLibraryUpdated: '2026-01-06',
+        },
+        {
+          userDisplayName: 'User One',
+          firstName: 'User',
+          lastName: 'One',
+          harpId: 'H1',
+          sharedMeasureName: 'Shared Measure B',
+          sharedMeasureUpdated: '2026-01-04',
+        },
+        {
+          userDisplayName: 'User Two',
+          firstName: 'User',
+          lastName: 'Two',
+          harpId: 'H2',
+          ownedMeasureName: 'Owned Measure C',
+          ownedMeasureVersion: '3.0',
+          ownedMeasureStatus: 'Published',
+          ownedMeasureModel: 'QDM',
+          ownedMeasureCmsId: 'CMS-3',
+          ownedMeasureUpdated: '2026-01-05',
+        },
+      ],
+    });
+
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(toArrayBuffer(buffer));
+    const worksheet = workbook.getWorksheet(USER_EXPORT_SHEET_NAME);
+
+    const firstUserRow = worksheet.getRow(3);
+    expect((firstUserRow.getCell(10).fill as ExcelJS.FillPattern).fgColor?.argb).toBe(
+      USER_EXPORT_OWNED_MEASURE_FILL,
+    );
+    expect(firstUserRow.getCell(10).border?.left?.style).toBe('thin');
+    expect(firstUserRow.getCell(10).border?.top?.style).toBe('thin');
+    expect((firstUserRow.getCell(16).fill as ExcelJS.FillPattern).fgColor?.argb).toBe(
+      USER_EXPORT_SHARED_MEASURE_FILL,
+    );
+    expect(firstUserRow.getCell(16).border?.right?.style).toBe('thin');
+    expect((firstUserRow.getCell(23).fill as ExcelJS.FillPattern).fgColor?.argb).toBe(
+      USER_EXPORT_OWNED_LIBRARY_FILL,
+    );
+    expect(firstUserRow.getCell(23).border?.bottom?.style).toBe('thin');
+    expect((firstUserRow.getCell(28).fill as ExcelJS.FillPattern).fgColor?.argb).toBe(
+      USER_EXPORT_SHARED_LIBRARY_FILL,
+    );
+    expect(firstUserRow.getCell(28).border?.left?.style).toBe('thin');
+    expect((firstUserRow.getCell(1).fill as ExcelJS.FillPattern | undefined)?.fgColor).toBeUndefined();
+
+    const secondUserRow = worksheet.getRow(4);
+    expect((secondUserRow.getCell(10).fill as ExcelJS.FillPattern).fgColor?.argb).toBe(
+      USER_EXPORT_OWNED_MEASURE_FILL,
+    );
+    expect((secondUserRow.getCell(16).fill as ExcelJS.FillPattern).fgColor?.argb).toBe(
+      USER_EXPORT_SHARED_MEASURE_FILL,
+    );
+    expect((secondUserRow.getCell(17).fill as ExcelJS.FillPattern).fgColor?.argb).toBe(
+      USER_EXPORT_SHARED_MEASURE_FILL,
+    );
+    expect((secondUserRow.getCell(28).fill as ExcelJS.FillPattern).fgColor?.argb).toBe(
+      USER_EXPORT_SHARED_LIBRARY_FILL,
+    );
+
+    const firstUserSeparator = firstUserRow.getCell(1).border?.bottom;
+    expect(firstUserSeparator?.style).toBeUndefined();
+
+    const firstUserLastRow = worksheet.getRow(4);
+    expect(firstUserLastRow.getCell(1).border?.bottom?.style).toBe('thick');
+    expect(firstUserLastRow.getCell(33).border?.bottom?.style).toBe('thick');
+
+    const finalRow = worksheet.getRow(5);
+    expect((finalRow.getCell(10).fill as ExcelJS.FillPattern).fgColor?.argb).toBe(
+      USER_EXPORT_OWNED_MEASURE_FILL,
+    );
+    expect(finalRow.getCell(1).border?.bottom?.style).toBe('thick');
   });
 
   it('applies group-header styling, blue column headers, freeze and widths', async () => {
