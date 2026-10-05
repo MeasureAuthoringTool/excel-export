@@ -206,38 +206,41 @@ describe('UserExportService', () => {
     const worksheet = workbook.getWorksheet(USER_EXPORT_SHEET_NAME);
 
     const firstUserRow = worksheet.getRow(3);
-    expect((firstUserRow.getCell(10).fill as ExcelJS.FillPattern).fgColor?.argb).toBe(
-      USER_EXPORT_OWNED_MEASURE_FILL,
-    );
+    expect(
+      (firstUserRow.getCell(10).fill as ExcelJS.FillPattern).fgColor?.argb,
+    ).toBe(USER_EXPORT_OWNED_MEASURE_FILL);
     expect(firstUserRow.getCell(10).border?.left?.style).toBe('thin');
     expect(firstUserRow.getCell(10).border?.top?.style).toBe('thin');
-    expect((firstUserRow.getCell(16).fill as ExcelJS.FillPattern).fgColor?.argb).toBe(
-      USER_EXPORT_SHARED_MEASURE_FILL,
-    );
+    expect(
+      (firstUserRow.getCell(16).fill as ExcelJS.FillPattern).fgColor?.argb,
+    ).toBe(USER_EXPORT_SHARED_MEASURE_FILL);
     expect(firstUserRow.getCell(16).border?.right?.style).toBe('thin');
-    expect((firstUserRow.getCell(23).fill as ExcelJS.FillPattern).fgColor?.argb).toBe(
-      USER_EXPORT_OWNED_LIBRARY_FILL,
-    );
+    expect(
+      (firstUserRow.getCell(23).fill as ExcelJS.FillPattern).fgColor?.argb,
+    ).toBe(USER_EXPORT_OWNED_LIBRARY_FILL);
     expect(firstUserRow.getCell(23).border?.bottom?.style).toBe('thin');
-    expect((firstUserRow.getCell(28).fill as ExcelJS.FillPattern).fgColor?.argb).toBe(
-      USER_EXPORT_SHARED_LIBRARY_FILL,
-    );
+    expect(
+      (firstUserRow.getCell(28).fill as ExcelJS.FillPattern).fgColor?.argb,
+    ).toBe(USER_EXPORT_SHARED_LIBRARY_FILL);
     expect(firstUserRow.getCell(28).border?.left?.style).toBe('thin');
-    expect((firstUserRow.getCell(1).fill as ExcelJS.FillPattern | undefined)?.fgColor).toBeUndefined();
+    expect(
+      (firstUserRow.getCell(1).fill as ExcelJS.FillPattern | undefined)
+        ?.fgColor,
+    ).toBeUndefined();
 
     const secondUserRow = worksheet.getRow(4);
-    expect((secondUserRow.getCell(10).fill as ExcelJS.FillPattern).fgColor?.argb).toBe(
-      USER_EXPORT_OWNED_MEASURE_FILL,
-    );
-    expect((secondUserRow.getCell(16).fill as ExcelJS.FillPattern).fgColor?.argb).toBe(
-      USER_EXPORT_SHARED_MEASURE_FILL,
-    );
-    expect((secondUserRow.getCell(17).fill as ExcelJS.FillPattern).fgColor?.argb).toBe(
-      USER_EXPORT_SHARED_MEASURE_FILL,
-    );
-    expect((secondUserRow.getCell(28).fill as ExcelJS.FillPattern).fgColor?.argb).toBe(
-      USER_EXPORT_SHARED_LIBRARY_FILL,
-    );
+    expect(
+      (secondUserRow.getCell(10).fill as ExcelJS.FillPattern).fgColor?.argb,
+    ).toBe(USER_EXPORT_OWNED_MEASURE_FILL);
+    expect(
+      (secondUserRow.getCell(16).fill as ExcelJS.FillPattern).fgColor?.argb,
+    ).toBe(USER_EXPORT_SHARED_MEASURE_FILL);
+    expect(
+      (secondUserRow.getCell(17).fill as ExcelJS.FillPattern).fgColor?.argb,
+    ).toBe(USER_EXPORT_SHARED_MEASURE_FILL);
+    expect(
+      (secondUserRow.getCell(28).fill as ExcelJS.FillPattern).fgColor?.argb,
+    ).toBe(USER_EXPORT_SHARED_LIBRARY_FILL);
 
     const firstUserSeparator = firstUserRow.getCell(1).border?.bottom;
     expect(firstUserSeparator?.style).toBeUndefined();
@@ -247,9 +250,9 @@ describe('UserExportService', () => {
     expect(firstUserLastRow.getCell(33).border?.bottom?.style).toBe('thick');
 
     const finalRow = worksheet.getRow(5);
-    expect((finalRow.getCell(10).fill as ExcelJS.FillPattern).fgColor?.argb).toBe(
-      USER_EXPORT_OWNED_MEASURE_FILL,
-    );
+    expect(
+      (finalRow.getCell(10).fill as ExcelJS.FillPattern).fgColor?.argb,
+    ).toBe(USER_EXPORT_OWNED_MEASURE_FILL);
     expect(finalRow.getCell(1).border?.bottom?.style).toBe('thick');
   });
 

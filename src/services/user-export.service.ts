@@ -176,7 +176,11 @@ export class UserExportService {
   }
 
   private applyUserSeparatorBorder(row: ExcelJS.Row): void {
-    for (let columnIndex = 1; columnIndex <= USER_EXPORT_COLUMNS.length; columnIndex++) {
+    for (
+      let columnIndex = 1;
+      columnIndex <= USER_EXPORT_COLUMNS.length;
+      columnIndex++
+    ) {
       const cell = row.getCell(columnIndex);
       cell.border = {
         ...(cell.border ?? {}),
@@ -193,13 +197,16 @@ export class UserExportService {
       return true;
     }
 
-    return this.getUserIdentityKey(currentRow) !== this.getUserIdentityKey(nextRow);
+    return (
+      this.getUserIdentityKey(currentRow) !== this.getUserIdentityKey(nextRow)
+    );
   }
 
   private getUserIdentityKey(row: UserExportRowDto): string {
-    return USER_METADATA_FIELDS.map((field) => String(row?.[field] ?? '')).join('||');
+    return USER_METADATA_FIELDS.map((field) => String(row?.[field] ?? '')).join(
+      '||',
+    );
   }
-
 
   /** Enables auto-filter across all 33 columns on row 2 and freezes rows 1–2. */
   private applySheetFeatures(worksheet: ExcelJS.Worksheet): void {
