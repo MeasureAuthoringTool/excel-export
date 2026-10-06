@@ -1,12 +1,42 @@
 import { Injectable } from '@nestjs/common';
 import * as ExcelJS from 'exceljs-hardened';
-import { GenerateUserExportDto } from '../dto/GenerateUserExportDto';
+import {
+  GenerateUserExportDto,
+  UserExportRowDto,
+} from '../dto/GenerateUserExportDto';
 import {
   USER_EXPORT_COLUMN_HEADER_FILL,
   USER_EXPORT_COLUMNS,
+  USER_EXPORT_OWNED_LIBRARY_FILL,
+  USER_EXPORT_OWNED_MEASURE_FILL,
   USER_EXPORT_GROUPS,
+  USER_EXPORT_SHARED_MEASURE_FILL,
+  USER_EXPORT_SHARED_LIBRARY_FILL,
   USER_EXPORT_SHEET_NAME,
 } from './static/UserExportColumns';
+
+const USER_METADATA_FIELDS: Array<keyof UserExportRowDto> = [
+  'userDisplayName',
+  'firstName',
+  'lastName',
+  'harpId',
+  'emailAddress',
+  'userStatus',
+  'roles',
+  'approval',
+  'lastLogin',
+];
+
+const COLORIZED_COLUMN_GROUPS: Array<{
+  start: number;
+  end: number;
+  fill: string;
+}> = [
+  { start: 10, end: 15, fill: USER_EXPORT_OWNED_MEASURE_FILL },
+  { start: 16, end: 22, fill: USER_EXPORT_SHARED_MEASURE_FILL },
+  { start: 23, end: 27, fill: USER_EXPORT_OWNED_LIBRARY_FILL },
+  { start: 28, end: 33, fill: USER_EXPORT_SHARED_LIBRARY_FILL },
+];
 
 @Injectable()
 export class UserExportService {
@@ -93,13 +123,17 @@ export class UserExportService {
     worksheet: ExcelJS.Worksheet,
     rows: GenerateUserExportDto['rows'],
   ): void {
-    rows.forEach((row) => {
+    rows.forEach((row, index) => {
       const values = USER_EXPORT_COLUMNS.map(
         (column) => row?.[column.field] ?? '',
       );
       const addedRow = worksheet.addRow(values);
       if (row?.measureError) {
         this.writeMeasureError(addedRow, row.measureError);
+      }
+      this.applyColorizedDataCellFills(addedRow);
+      if (this.isLastRowForUser(row, rows[index + 1])) {
+        this.applyUserSeparatorBorder(addedRow);
       }
     });
   }
@@ -120,6 +154,58 @@ export class UserExportService {
       bold: true,
       color: { argb: 'FFFF0000' },
     };
+  }
+
+  private applyColorizedDataCellFills(row: ExcelJS.Row): void {
+    COLORIZED_COLUMN_GROUPS.forEach(({ start, end, fill }) => {
+      for (let columnIndex = start; columnIndex <= end; columnIndex++) {
+        const cell = row.getCell(columnIndex);
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: fill },
+        };
+        cell.border = {
+          top: { style: 'thin', color: { argb: 'FFB7B7B7' } },
+          left: { style: 'thin', color: { argb: 'FFB7B7B7' } },
+          bottom: { style: 'thin', color: { argb: 'FFB7B7B7' } },
+          right: { style: 'thin', color: { argb: 'FFB7B7B7' } },
+        };
+      }
+    });
+  }
+
+  private applyUserSeparatorBorder(row: ExcelJS.Row): void {
+    for (
+      let columnIndex = 1;
+      columnIndex <= USER_EXPORT_COLUMNS.length;
+      columnIndex++
+    ) {
+      const cell = row.getCell(columnIndex);
+      cell.border = {
+        ...(cell.border ?? {}),
+        bottom: { style: 'thick', color: { argb: 'FF000000' } },
+      };
+    }
+  }
+
+  private isLastRowForUser(
+    currentRow: UserExportRowDto,
+    nextRow?: UserExportRowDto,
+  ): boolean {
+    if (!nextRow) {
+      return true;
+    }
+
+    return (
+      this.getUserIdentityKey(currentRow) !== this.getUserIdentityKey(nextRow)
+    );
+  }
+
+  private getUserIdentityKey(row: UserExportRowDto): string {
+    return USER_METADATA_FIELDS.map((field) => String(row?.[field] ?? '')).join(
+      '||',
+    );
   }
 
   /** Enables auto-filter across all 33 columns on row 2 and freezes rows 1–2. */
