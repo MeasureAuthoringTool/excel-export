@@ -145,7 +145,7 @@ describe('UserExportService', () => {
     expect(row4.getCell(9).value).toBe('2026-02-02'); // lastLogin (col 9)
   });
 
-  it('applies fills only to populated data cells and a thick separator after each user group', async () => {
+  it('applies fills and a medium separator after each user group', async () => {
     const buffer = await service.generateUserExportXlsx({
       rows: [
         {
@@ -210,7 +210,7 @@ describe('UserExportService', () => {
       (firstUserRow.getCell(10).fill as ExcelJS.FillPattern).fgColor?.argb,
     ).toBe(USER_EXPORT_OWNED_MEASURE_FILL);
     expect(firstUserRow.getCell(10).border?.left?.style).toBe('thin');
-    expect(firstUserRow.getCell(10).border?.top?.style).toBe('thin');
+    expect(firstUserRow.getCell(10).border?.top?.style).toBeUndefined();
     expect(
       (firstUserRow.getCell(16).fill as ExcelJS.FillPattern).fgColor?.argb,
     ).toBe(USER_EXPORT_SHARED_MEASURE_FILL);
@@ -246,14 +246,16 @@ describe('UserExportService', () => {
     expect(firstUserSeparator?.style).toBeUndefined();
 
     const firstUserLastRow = worksheet.getRow(4);
-    expect(firstUserLastRow.getCell(1).border?.bottom?.style).toBe('thick');
-    expect(firstUserLastRow.getCell(33).border?.bottom?.style).toBe('thick');
+    expect(firstUserLastRow.getCell(1).border?.bottom?.style).toBe('medium');
+    expect(firstUserLastRow.getCell(28).border?.bottom?.style).toBe('medium');
+    expect(firstUserLastRow.getCell(33).border?.bottom?.style).toBe('medium');
 
     const finalRow = worksheet.getRow(5);
     expect(
       (finalRow.getCell(10).fill as ExcelJS.FillPattern).fgColor?.argb,
     ).toBe(USER_EXPORT_OWNED_MEASURE_FILL);
-    expect(finalRow.getCell(1).border?.bottom?.style).toBe('thick');
+    expect(finalRow.getCell(1).border?.bottom?.style).toBe('medium');
+    expect(finalRow.getCell(28).border?.bottom?.style).toBe('medium');
   });
 
   it('applies group-header styling, blue column headers, freeze and widths', async () => {
