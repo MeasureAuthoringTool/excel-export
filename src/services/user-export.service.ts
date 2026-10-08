@@ -128,6 +128,7 @@ export class UserExportService {
         (column) => row?.[column.field] ?? '',
       );
       const addedRow = worksheet.addRow(values);
+
       if (row?.measureError) {
         this.writeMeasureError(addedRow, row.measureError);
       }
@@ -166,7 +167,6 @@ export class UserExportService {
           fgColor: { argb: fill },
         };
         cell.border = {
-          top: { style: 'thin', color: { argb: 'FFB7B7B7' } },
           left: { style: 'thin', color: { argb: 'FFB7B7B7' } },
           bottom: { style: 'thin', color: { argb: 'FFB7B7B7' } },
           right: { style: 'thin', color: { argb: 'FFB7B7B7' } },
@@ -184,7 +184,7 @@ export class UserExportService {
       const cell = row.getCell(columnIndex);
       cell.border = {
         ...(cell.border ?? {}),
-        bottom: { style: 'thick', color: { argb: 'FF000000' } },
+        bottom: { style: 'medium', color: { argb: 'FF000000' } },
       };
     }
   }
