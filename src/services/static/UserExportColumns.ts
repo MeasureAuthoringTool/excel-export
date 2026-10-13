@@ -38,15 +38,15 @@ export const USER_EXPORT_COLUMNS: UserExportColumn[] = [
   { header: 'Email Address', field: 'emailAddress' },
   { header: 'User Status', field: 'userStatus' },
   { header: 'Roles', field: 'roles' },
-  { header: 'Approval', field: 'approval' },
-  { header: 'Last Login', field: 'lastLogin' },
+  { header: 'Approval (UTC)', field: 'approval' },
+  { header: 'Last Login (UTC)', field: 'lastLogin' },
   // User's Owned Measures (10–15)
   { header: 'Owned Measure Name', field: 'ownedMeasureName' },
   { header: 'Owned Measure Version', field: 'ownedMeasureVersion' },
   { header: 'Owned Measure Status', field: 'ownedMeasureStatus' },
   { header: 'Owned Measure Model', field: 'ownedMeasureModel' },
   { header: 'Owned Measure CMS ID', field: 'ownedMeasureCmsId' },
-  { header: 'Owned Measure Updated', field: 'ownedMeasureUpdated' },
+  { header: 'Owned Measure Updated (UTC)', field: 'ownedMeasureUpdated' },
   // Measures Shared with User (16–22)
   { header: 'Shared Measure Name', field: 'sharedMeasureName' },
   { header: 'Shared Measure Version', field: 'sharedMeasureVersion' },
@@ -54,20 +54,20 @@ export const USER_EXPORT_COLUMNS: UserExportColumn[] = [
   { header: 'Shared Measure Model', field: 'sharedMeasureModel' },
   { header: 'Shared Measure CMS ID', field: 'sharedMeasureCmsId' },
   { header: 'Shared Measure Owner', field: 'sharedMeasureOwner' },
-  { header: 'Shared Measure Updated', field: 'sharedMeasureUpdated' },
+  { header: 'Shared Measure Updated (UTC)', field: 'sharedMeasureUpdated' },
   // User's Owned Libraries (23–27)
   { header: 'Owned Library Name', field: 'ownedLibraryName' },
   { header: 'Owned Library Version', field: 'ownedLibraryVersion' },
   { header: 'Owned Library Status', field: 'ownedLibraryStatus' },
   { header: 'Owned Library Model', field: 'ownedLibraryModel' },
-  { header: 'Owned Library Updated', field: 'ownedLibraryUpdated' },
+  { header: 'Owned Library Updated (UTC)', field: 'ownedLibraryUpdated' },
   // Libraries Shared with User (28–33)
   { header: 'Shared Library Name', field: 'sharedLibraryName' },
   { header: 'Shared Library Version', field: 'sharedLibraryVersion' },
   { header: 'Shared Library Status', field: 'sharedLibraryStatus' },
   { header: 'Shared Library Model', field: 'sharedLibraryModel' },
   { header: 'Shared Library Owner', field: 'sharedLibraryOwner' },
-  { header: 'Shared Library Updated', field: 'sharedLibraryUpdated' },
+  { header: 'Shared Library Updated (UTC)', field: 'sharedLibraryUpdated' },
 ];
 
 /**
