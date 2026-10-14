@@ -45,8 +45,8 @@ export const CODE_SYSTEM_EXPORT_COLUMNS: CodeSystemExportColumn[] = [
   { header: 'Version ID', field: 'versionId' },
   { header: 'Is Latest Version', field: 'latestVersion' },
   // Record Details (9–11)
-  { header: 'Last Updated', field: 'lastUpdated' },
-  { header: 'Last Updated (Upstream)', field: 'lastUpdatedUpstream' },
+  { header: 'Last Updated (UTC)', field: 'lastUpdated' },
+  { header: 'Last Updated (Upstream) (UTC)', field: 'lastUpdatedUpstream' },
   { header: 'ID', field: 'id' },
 ];
 
