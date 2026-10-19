@@ -53,7 +53,12 @@ export class UserExportService {
 
     this.writeGroupHeaderRow(worksheet, groups);
     this.writeColumnHeaderRow(worksheet, columns);
-    this.writeDataRows(worksheet, generateUserExportDto?.rows ?? [], columns, groups);
+    this.writeDataRows(
+      worksheet,
+      generateUserExportDto?.rows ?? [],
+      columns,
+      groups,
+    );
     this.applySheetFeatures(worksheet, columns.length);
     this.applyColumnWidths(worksheet, columns);
 
@@ -159,7 +164,9 @@ export class UserExportService {
     ];
     const columnIndex =
       candidateFields
-        .map((field) => columns.findIndex((column) => column.field === field) + 1)
+        .map(
+          (field) => columns.findIndex((column) => column.field === field) + 1,
+        )
         .find((index) => index > 0) ?? 0;
     if (columnIndex === 0) {
       return;
@@ -183,7 +190,11 @@ export class UserExportService {
       .filter((group) => group.key !== 'userMetadata')
       .forEach((group) => {
         const fill = GROUP_FILL_BY_KEY[group.key];
-        for (let columnIndex = group.start; columnIndex <= group.end; columnIndex++) {
+        for (
+          let columnIndex = group.start;
+          columnIndex <= group.end;
+          columnIndex++
+        ) {
           const cell = row.getCell(columnIndex);
           cell.fill = {
             type: 'pattern',
@@ -199,7 +210,10 @@ export class UserExportService {
       });
   }
 
-  private applyUserSeparatorBorder(row: ExcelJS.Row, columnCount: number): void {
+  private applyUserSeparatorBorder(
+    row: ExcelJS.Row,
+    columnCount: number,
+  ): void {
     for (let columnIndex = 1; columnIndex <= columnCount; columnIndex++) {
       const cell = row.getCell(columnIndex);
       cell.border = {

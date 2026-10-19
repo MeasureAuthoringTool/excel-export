@@ -4,14 +4,9 @@ import {
 } from '../../dto/GenerateUserExportDto';
 
 export type UserExportSelectableGroupKey =
-  | 'ownedMeasures'
-  | 'sharedMeasures'
-  | 'ownedLibraries'
-  | 'sharedLibraries';
+  'ownedMeasures' | 'sharedMeasures' | 'ownedLibraries' | 'sharedLibraries';
 
-export type UserExportGroupKey =
-  | 'userMetadata'
-  | UserExportSelectableGroupKey;
+export type UserExportGroupKey = 'userMetadata' | UserExportSelectableGroupKey;
 
 /**
  * A single group header (Row 1) definition. Groups span a contiguous, 1-based
@@ -179,13 +174,15 @@ export function resolveUserExportLayout(
   groups: ResolvedUserExportGroup[];
 } {
   const explicitSelectableOptions = hasExplicitSelectableOptions(options);
-  const includedDefinitions = USER_EXPORT_GROUP_DEFINITIONS.filter((definition) => {
-    if (definition.key === 'userMetadata') {
-      return true;
-    }
+  const includedDefinitions = USER_EXPORT_GROUP_DEFINITIONS.filter(
+    (definition) => {
+      if (definition.key === 'userMetadata') {
+        return true;
+      }
 
-    return !explicitSelectableOptions || options?.[definition.key] === true;
-  });
+      return !explicitSelectableOptions || options?.[definition.key] === true;
+    },
+  );
 
   return {
     columns: includedDefinitions.flatMap((definition) => definition.columns),

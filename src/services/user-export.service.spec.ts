@@ -134,7 +134,9 @@ describe('UserExportService', () => {
 
     expect(worksheet.getRow(1).getCell(1).value).toBe('User Metadata');
     expect(worksheet.getRow(1).getCell(10).value).toBe("User's Owned Measures");
-    expect(worksheet.getRow(1).getCell(16).value).toBe('Libraries Shared with User');
+    expect(worksheet.getRow(1).getCell(16).value).toBe(
+      'Libraries Shared with User',
+    );
     expect(worksheet.getRow(2).cellCount).toBe(layout.columns.length);
     expect(worksheet.autoFilter).toBe('A2:U2');
 
