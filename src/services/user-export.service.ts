@@ -5,14 +5,15 @@ import {
   UserExportRowDto,
 } from '../dto/GenerateUserExportDto';
 import {
+  ResolvedUserExportGroup,
   USER_EXPORT_COLUMN_HEADER_FILL,
-  USER_EXPORT_COLUMNS,
   USER_EXPORT_OWNED_LIBRARY_FILL,
   USER_EXPORT_OWNED_MEASURE_FILL,
-  USER_EXPORT_GROUPS,
   USER_EXPORT_SHARED_MEASURE_FILL,
   USER_EXPORT_SHARED_LIBRARY_FILL,
   USER_EXPORT_SHEET_NAME,
+  resolveUserExportLayout,
+  UserExportColumn,
 } from './static/UserExportColumns';
 
 const USER_METADATA_FIELDS: Array<keyof UserExportRowDto> = [
@@ -27,45 +28,45 @@ const USER_METADATA_FIELDS: Array<keyof UserExportRowDto> = [
   'lastLogin',
 ];
 
-const COLORIZED_COLUMN_GROUPS: Array<{
-  start: number;
-  end: number;
-  fill: string;
-}> = [
-  { start: 10, end: 15, fill: USER_EXPORT_OWNED_MEASURE_FILL },
-  { start: 16, end: 22, fill: USER_EXPORT_SHARED_MEASURE_FILL },
-  { start: 23, end: 27, fill: USER_EXPORT_OWNED_LIBRARY_FILL },
-  { start: 28, end: 33, fill: USER_EXPORT_SHARED_LIBRARY_FILL },
-];
+const GROUP_FILL_BY_KEY: Record<string, string> = {
+  ownedMeasures: USER_EXPORT_OWNED_MEASURE_FILL,
+  sharedMeasures: USER_EXPORT_SHARED_MEASURE_FILL,
+  ownedLibraries: USER_EXPORT_OWNED_LIBRARY_FILL,
+  sharedLibraries: USER_EXPORT_SHARED_LIBRARY_FILL,
+};
 
 @Injectable()
 export class UserExportService {
   /**
    * Generates the "Full User Export" workbook.
    *
-   * The output always contains the two header rows spanning 33 columns. Any
-   * rows provided in the payload are written starting at row 3 (in column
-   * order). When `rows` is empty the result is headers-only.
+   * The output always contains the two header rows for the included column
+   * groups. Any rows provided in the payload are written starting at row 3 (in
+   * column order). When `rows` is empty the result is headers-only.
    */
   async generateUserExportXlsx(
     generateUserExportDto: GenerateUserExportDto,
   ): Promise<Buffer> {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet(USER_EXPORT_SHEET_NAME);
+    const { columns, groups } = resolveUserExportLayout(generateUserExportDto);
 
-    this.writeGroupHeaderRow(worksheet);
-    this.writeColumnHeaderRow(worksheet);
-    this.writeDataRows(worksheet, generateUserExportDto?.rows ?? []);
-    this.applySheetFeatures(worksheet);
-    this.applyColumnWidths(worksheet);
+    this.writeGroupHeaderRow(worksheet, groups);
+    this.writeColumnHeaderRow(worksheet, columns);
+    this.writeDataRows(worksheet, generateUserExportDto?.rows ?? [], columns, groups);
+    this.applySheetFeatures(worksheet, columns.length);
+    this.applyColumnWidths(worksheet, columns);
 
     return Buffer.from(await workbook.xlsx.writeBuffer());
   }
 
-  /** Row 1: five merged, colored group header cells (bold white, centered). */
-  private writeGroupHeaderRow(worksheet: ExcelJS.Worksheet): void {
+  /** Row 1: merged, colored group header cells (bold white, centered). */
+  private writeGroupHeaderRow(
+    worksheet: ExcelJS.Worksheet,
+    groups: ResolvedUserExportGroup[],
+  ): void {
     const groupRow = worksheet.getRow(1);
-    USER_EXPORT_GROUPS.forEach((group) => {
+    groups.forEach((group) => {
       worksheet.mergeCells(1, group.start, 1, group.end);
       const cell = groupRow.getCell(group.start);
       cell.value = group.label;
@@ -85,10 +86,13 @@ export class UserExportService {
     groupRow.commit();
   }
 
-  /** Row 2: the 33 column headers (bold, blue fill, thin borders). */
-  private writeColumnHeaderRow(worksheet: ExcelJS.Worksheet): void {
+  /** Row 2: the selected column headers (bold, blue fill, thin borders). */
+  private writeColumnHeaderRow(
+    worksheet: ExcelJS.Worksheet,
+    columns: UserExportColumn[],
+  ): void {
     const headerRow = worksheet.getRow(2);
-    USER_EXPORT_COLUMNS.forEach((column, index) => {
+    columns.forEach((column, index) => {
       const cell = headerRow.getCell(index + 1);
       cell.value = column.header;
       cell.font = {
@@ -114,39 +118,53 @@ export class UserExportService {
   }
 
   /**
-   * Writes each element of `rows` starting at row 3, in the column field order.
-   * Works automatically when `rows` is empty (headers-only output). When a row
-   * carries a `measureError`, that message is rendered in red in the Owned
-   * Measure Name column instead of measure data.
+   * Writes each element of `rows` starting at row 3, in the selected column
+   * field order. Works automatically when `rows` is empty (headers-only output).
+   * When a row carries a `measureError`, that message is rendered in red in the
+   * first visible measure-name column.
    */
   private writeDataRows(
     worksheet: ExcelJS.Worksheet,
     rows: GenerateUserExportDto['rows'],
+    columns: UserExportColumn[],
+    groups: ResolvedUserExportGroup[],
   ): void {
     rows.forEach((row, index) => {
-      const values = USER_EXPORT_COLUMNS.map(
-        (column) => row?.[column.field] ?? '',
-      );
+      const values = columns.map((column) => row?.[column.field] ?? '');
       const addedRow = worksheet.addRow(values);
 
       if (row?.measureError) {
-        this.writeMeasureError(addedRow, row.measureError);
+        this.writeMeasureError(addedRow, row.measureError, columns);
       }
-      this.applyColorizedDataCellFills(addedRow);
+      this.applyColorizedDataCellFills(addedRow, groups);
       if (this.isLastRowForUser(row, rows[index + 1])) {
-        this.applyUserSeparatorBorder(addedRow);
+        this.applyUserSeparatorBorder(addedRow, columns.length);
       }
     });
   }
 
   /**
-   * Renders a measure-fetch error for a user: the message is written into the
-   * Owned Measure Name column in bold red so an admin can see that the user's
-   * measure data could not be retrieved upstream.
+   * Renders a measure-fetch error for a user in the first visible measure-name
+   * column so an admin can see that the user's measure data could not be
+   * retrieved upstream.
    */
-  private writeMeasureError(row: ExcelJS.Row, message: string): void {
+  private writeMeasureError(
+    row: ExcelJS.Row,
+    message: string,
+    columns: UserExportColumn[],
+  ): void {
+    const candidateFields: Array<keyof UserExportRowDto> = [
+      'ownedMeasureName',
+      'sharedMeasureName',
+    ];
     const columnIndex =
-      USER_EXPORT_COLUMNS.findIndex((c) => c.field === 'ownedMeasureName') + 1;
+      candidateFields
+        .map((field) => columns.findIndex((column) => column.field === field) + 1)
+        .find((index) => index > 0) ?? 0;
+    if (columnIndex === 0) {
+      return;
+    }
+
     const cell = row.getCell(columnIndex);
     cell.value = message;
     cell.font = {
@@ -157,30 +175,32 @@ export class UserExportService {
     };
   }
 
-  private applyColorizedDataCellFills(row: ExcelJS.Row): void {
-    COLORIZED_COLUMN_GROUPS.forEach(({ start, end, fill }) => {
-      for (let columnIndex = start; columnIndex <= end; columnIndex++) {
-        const cell = row.getCell(columnIndex);
-        cell.fill = {
-          type: 'pattern',
-          pattern: 'solid',
-          fgColor: { argb: fill },
-        };
-        cell.border = {
-          left: { style: 'thin', color: { argb: 'FFB7B7B7' } },
-          bottom: { style: 'thin', color: { argb: 'FFB7B7B7' } },
-          right: { style: 'thin', color: { argb: 'FFB7B7B7' } },
-        };
-      }
-    });
+  private applyColorizedDataCellFills(
+    row: ExcelJS.Row,
+    groups: ResolvedUserExportGroup[],
+  ): void {
+    groups
+      .filter((group) => group.key !== 'userMetadata')
+      .forEach((group) => {
+        const fill = GROUP_FILL_BY_KEY[group.key];
+        for (let columnIndex = group.start; columnIndex <= group.end; columnIndex++) {
+          const cell = row.getCell(columnIndex);
+          cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: fill },
+          };
+          cell.border = {
+            left: { style: 'thin', color: { argb: 'FFB7B7B7' } },
+            bottom: { style: 'thin', color: { argb: 'FFB7B7B7' } },
+            right: { style: 'thin', color: { argb: 'FFB7B7B7' } },
+          };
+        }
+      });
   }
 
-  private applyUserSeparatorBorder(row: ExcelJS.Row): void {
-    for (
-      let columnIndex = 1;
-      columnIndex <= USER_EXPORT_COLUMNS.length;
-      columnIndex++
-    ) {
+  private applyUserSeparatorBorder(row: ExcelJS.Row, columnCount: number): void {
+    for (let columnIndex = 1; columnIndex <= columnCount; columnIndex++) {
       const cell = row.getCell(columnIndex);
       cell.border = {
         ...(cell.border ?? {}),
@@ -208,18 +228,24 @@ export class UserExportService {
     );
   }
 
-  /** Enables auto-filter across all 33 columns on row 2 and freezes rows 1–2. */
-  private applySheetFeatures(worksheet: ExcelJS.Worksheet): void {
+  /** Enables auto-filter across the selected columns on row 2 and freezes rows 1–2. */
+  private applySheetFeatures(
+    worksheet: ExcelJS.Worksheet,
+    columnCount: number,
+  ): void {
     worksheet.autoFilter = {
       from: { row: 2, column: 1 },
-      to: { row: 2, column: USER_EXPORT_COLUMNS.length },
+      to: { row: 2, column: columnCount },
     };
     worksheet.views = [{ state: 'frozen', xSplit: 0, ySplit: 2 }];
   }
 
   /** Reasonable, header-driven column widths. */
-  private applyColumnWidths(worksheet: ExcelJS.Worksheet): void {
-    USER_EXPORT_COLUMNS.forEach((column, index) => {
+  private applyColumnWidths(
+    worksheet: ExcelJS.Worksheet,
+    columns: UserExportColumn[],
+  ): void {
+    columns.forEach((column, index) => {
       worksheet.getColumn(index + 1).width = Math.max(
         column.header.length + 4,
         14,

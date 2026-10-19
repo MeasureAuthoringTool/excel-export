@@ -1,4 +1,10 @@
-import { IsArray, IsOptional, IsString, ValidateNested } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 /**
@@ -159,4 +165,20 @@ export class GenerateUserExportDto {
   @ValidateNested({ each: true })
   @Type(() => UserExportRowDto)
   rows: UserExportRowDto[];
+
+  @IsOptional()
+  @IsBoolean()
+  ownedMeasures?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  sharedMeasures?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  ownedLibraries?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  sharedLibraries?: boolean;
 }
