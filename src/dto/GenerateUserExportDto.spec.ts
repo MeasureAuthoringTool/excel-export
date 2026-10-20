@@ -19,9 +19,22 @@ describe('GenerateUserExportDto', () => {
         { userDisplayName: 'Jane Doe', firstName: 'Jane', harpId: 'H1' },
         { userDisplayName: 'John Roe', sharedLibraryUpdated: '2026-01-01' },
       ],
+      ownedMeasures: true,
+      sharedLibraries: false,
     });
     const errors = await validate(dto);
     expect(errors).toHaveLength(0);
+  });
+
+  it('fails validation when an export option is not a boolean', async () => {
+    const dto = plainToInstance(GenerateUserExportDto, {
+      rows: [],
+      ownedMeasures: 'yes',
+    });
+    const errors = await validate(dto);
+    expect(errors).toHaveLength(1);
+    expect(errors[0].property).toBe('ownedMeasures');
+    expect(errors[0].constraints).toHaveProperty('isBoolean');
   });
 
   it('fails validation when rows is not an array', async () => {

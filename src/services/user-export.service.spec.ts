@@ -10,6 +10,7 @@ import {
   USER_EXPORT_SHARED_MEASURE_FILL,
   USER_EXPORT_SHARED_LIBRARY_FILL,
   USER_EXPORT_SHEET_NAME,
+  resolveUserExportLayout,
 } from './static/UserExportColumns';
 
 // Node Buffer uses ArrayBuffer internally; copy it into a clean ArrayBuffer for ExcelJS's load()
@@ -104,6 +105,46 @@ describe('UserExportService', () => {
     expect(dataRow.getCell(3).value).toBe('Doe');
     // Column 33 (Shared Library Updated) is the last field
     expect(dataRow.getCell(33).value).toBe('2026-01-01');
+  });
+
+  it('renders only the requested selectable column groups', async () => {
+    const layout = resolveUserExportLayout({
+      ownedMeasures: true,
+      sharedMeasures: false,
+      ownedLibraries: false,
+      sharedLibraries: true,
+    });
+    const buffer = await service.generateUserExportXlsx({
+      rows: [
+        {
+          userDisplayName: 'Jane Doe',
+          ownedMeasureName: 'Owned Measure A',
+          sharedLibraryName: 'Shared Library A',
+        },
+      ],
+      ownedMeasures: true,
+      sharedMeasures: false,
+      ownedLibraries: false,
+      sharedLibraries: true,
+    });
+
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(toArrayBuffer(buffer));
+    const worksheet = workbook.getWorksheet(USER_EXPORT_SHEET_NAME);
+
+    expect(worksheet.getRow(1).getCell(1).value).toBe('User Metadata');
+    expect(worksheet.getRow(1).getCell(10).value).toBe("User's Owned Measures");
+    expect(worksheet.getRow(1).getCell(16).value).toBe(
+      'Libraries Shared with User',
+    );
+    expect(worksheet.getRow(2).cellCount).toBe(layout.columns.length);
+    expect(worksheet.autoFilter).toBe('A2:U2');
+
+    const dataRow = worksheet.getRow(3);
+    expect(dataRow.getCell(1).value).toBe('Jane Doe');
+    expect(dataRow.getCell(10).value).toBe('Owned Measure A');
+    expect(dataRow.getCell(16).value).toBe('Shared Library A');
+    expect(dataRow.getCell(15).value).toBe('');
   });
 
   it('produces headers-only output when the payload has no rows property', async () => {
@@ -322,5 +363,30 @@ describe('UserExportService', () => {
 
     // User metadata is still written on the same row
     expect(worksheet.getRow(3).getCell(1).value).toBe('Broken User');
+  });
+
+  it('renders a measure error in the shared measure column when owned measures are omitted', async () => {
+    const buffer = await service.generateUserExportXlsx({
+      rows: [
+        {
+          userDisplayName: 'Broken User',
+          measureError: 'Unable to retrieve this user',
+        },
+      ],
+      ownedMeasures: false,
+      sharedMeasures: true,
+      ownedLibraries: false,
+      sharedLibraries: false,
+    });
+
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(toArrayBuffer(buffer));
+    const worksheet = workbook.getWorksheet(USER_EXPORT_SHEET_NAME);
+
+    const errorCell = worksheet.getRow(3).getCell(10);
+    expect(errorCell.value).toBe('Unable to retrieve this user');
+    const font = errorCell.font as ExcelJS.Font;
+    expect(font.color?.argb).toBe('FFFF0000');
+    expect(font.bold).toBe(true);
   });
 });
