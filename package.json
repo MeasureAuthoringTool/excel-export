@@ -32,7 +32,7 @@
     "class-validator": "^0.15.1",
     "cqm-models": "^4.2.2",
     "dd-trace": "^5.81.0",
-    "exceljs-hardened": "^5.0.0",
+    "exceljs-hardened": "^5.0.1",
     "export-excel": "file:",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.9.5",
