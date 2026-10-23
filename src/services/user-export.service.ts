@@ -231,9 +231,26 @@ export class UserExportService {
       return true;
     }
 
-    return (
-      this.getUserIdentityKey(currentRow) !== this.getUserIdentityKey(nextRow)
-    );
+    // A new user block starts when user-metadata fields are populated again.
+    if (!this.hasUserMetadata(nextRow)) {
+      return false;
+    }
+
+    // Keep compatibility when metadata is repeated on every row.
+    if (this.hasUserMetadata(currentRow)) {
+      return (
+        this.getUserIdentityKey(currentRow) !== this.getUserIdentityKey(nextRow)
+      );
+    }
+
+    return true;
+  }
+
+  private hasUserMetadata(row: UserExportRowDto): boolean {
+    return USER_METADATA_FIELDS.some((field) => {
+      const value = row?.[field];
+      return typeof value === 'string' && value.trim().length > 0;
+    });
   }
 
   private getUserIdentityKey(row: UserExportRowDto): string {
