@@ -285,6 +285,10 @@ describe('UserExportService', () => {
 
     const firstUserSeparator = firstUserRow.getCell(1).border?.bottom;
     expect(firstUserSeparator?.style).toBeUndefined();
+    expect(firstUserRow.getCell(10).border?.bottom?.style).toBe('thin');
+    expect(firstUserRow.getCell(16).border?.bottom?.style).toBe('thin');
+    expect(firstUserRow.getCell(23).border?.bottom?.style).toBe('thin');
+    expect(firstUserRow.getCell(28).border?.bottom?.style).toBe('thin');
 
     const firstUserLastRow = worksheet.getRow(4);
     expect(firstUserLastRow.getCell(1).border?.bottom?.style).toBe('medium');
